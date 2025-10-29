@@ -203,32 +203,37 @@ export default function Articulos() {
   const [descripcionBuscada, setDescripcionBuscada] = useState("");
   const [paginaInput, setPaginaInput] = useState(""); // para el input de página
 
-  const fetchArticulos = async (p = page) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams({
-        page: p.toString(),
-        limit: limit.toString(),
-      });
-      if (codigoBuscado) params.append("codigo", codigoBuscado);
-      if (descripcionBuscada) params.append("descripcion", descripcionBuscada);
-      // https://localhost:3000
-      const res = await fetch(`http://din-clientes.onrender.com/articulos?${params}`);
-      if (!res.ok) throw new Error("Error al cargar los artículos");
-      const data = await res.json();
-      if (!data.ok) throw new Error("Error en la respuesta del servidor");
+const API_URL =
+  import.meta.env.PROD
+    ? "https://din-clientes.onrender.com/articulos" // producción
+    : "http://localhost:3000/articulos";           // desarrollo local
 
-      setArticulos(data.articulos);
-      setTotal(data.total);
-      setPage(data.page);
-      setPaginaInput(""); // limpiar input al cambiar página automáticamente
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchArticulos = async (p = page) => {
+  setLoading(true);
+  setError(null);
+  try {
+    const params = new URLSearchParams({
+      page: p.toString(),
+      limit: limit.toString(),
+    });
+    if (codigoBuscado) params.append("codigo", codigoBuscado);
+    if (descripcionBuscada) params.append("descripcion", descripcionBuscada);
+
+    const res = await fetch(`${API_URL}?${params}`);
+    if (!res.ok) throw new Error("Error al cargar los artículos");
+    const data = await res.json();
+    if (!data.ok) throw new Error("Error en la respuesta del servidor");
+
+    setArticulos(data.articulos);
+    setTotal(data.total);
+    setPage(data.page);
+    setPaginaInput("");
+  } catch (err: any) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Búsqueda instantánea con debounce
   useEffect(() => {
