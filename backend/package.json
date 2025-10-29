@@ -16,7 +16,8 @@
     "axios": "^1.13.1",
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "node-cron": "^3.0.3"
   },
   "devDependencies": {
     "@types/react": "^19.2.2"
