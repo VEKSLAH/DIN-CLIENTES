@@ -213,8 +213,8 @@ export default function Articulos() {
       });
       if (codigoBuscado) params.append("codigo", codigoBuscado);
       if (descripcionBuscada) params.append("descripcion", descripcionBuscada);
-
-      const res = await fetch(`http://localhost:3000/articulos?${params}`);
+      // https://localhost:3000
+      const res = await fetch(`http://din-clientes.onrender.com/articulos?${params}`);
       if (!res.ok) throw new Error("Error al cargar los artículos");
       const data = await res.json();
       if (!data.ok) throw new Error("Error en la respuesta del servidor");
