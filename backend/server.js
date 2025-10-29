@@ -398,28 +398,10 @@ async function actualizarArticulos() {
 
     // Guardar cache en disco
     fs.writeFileSync(CACHE_FILE, JSON.stringify(articulosCache, null, 2));
-    console.log(
-      `✅ Artículos actualizados y guardados en cache (${articulosCache.length})`
-    );
+    console.log(`✅ Artículos actualizados y guardados en cache (${articulosCache.length})`);
   } catch (err) {
     console.error("❌ Error al actualizar artículos:", err.message);
   }
-}
-
-// 🚀 Cargar cache desde disco al iniciar (si existe)
-if (fs.existsSync(CACHE_FILE)) {
-  try {
-    const raw = fs.readFileSync(CACHE_FILE, "utf-8");
-    articulosCache = JSON.parse(raw);
-    console.log(
-      `🗂️ Cache cargado desde disco (${articulosCache.length} artículos)`
-    );
-  } catch (err) {
-    console.error("⚠️ Error al leer cache local:", err.message);
-  }
-} else {
-  console.log("⚠️ No se encontró cache local, descargando datos iniciales...");
-  actualizarArticulos();
 }
 
 // ⏰ Programar tarea automática todos los días a las 3:00 AM
@@ -463,10 +445,30 @@ app.get("/articulos", (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`✅ Servidor activo en http://localhost:${PORT}/articulos`);
-});
+// 🔑 Inicialización segura del servidor
+async function initServer() {
+  if (fs.existsSync(CACHE_FILE)) {
+    try {
+      const raw = fs.readFileSync(CACHE_FILE, "utf-8");
+      articulosCache = JSON.parse(raw);
+      console.log(`🗂️ Cache cargado desde disco (${articulosCache.length} artículos)`);
+    } catch (err) {
+      console.error("⚠️ Error al leer cache local:", err.message);
+      await actualizarArticulos();
+    }
+  } else {
+    console.log("⚠️ No se encontró cache local, descargando datos iniciales...");
+    await actualizarArticulos();
+  }
+
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`✅ Servidor activo en http://localhost:${PORT}/articulos`);
+  });
+}
+
+// Ejecutar inicialización
+initServer();
 
 // Manejo de errores global
 process.on("unhandledRejection", (err) =>
