@@ -38,7 +38,6 @@
 //   lista: r.LISTA || "",
 // }));
 
-
 //     // res.json({ ok: true, cantidad: articulos.length, articulos: articulos.slice(0, 50) }); // primeros 50
 //     res.json({ ok: true, cantidad: articulos.length, articulos });
 //   } catch (err) {
@@ -47,7 +46,6 @@
 // });
 
 // app.listen(3000, () => console.log("Servidor activo en http://localhost:3000/articulos"));
-
 
 /////////// OK //////////////
 
@@ -137,7 +135,6 @@
 // app.listen(3000, () => {
 //   console.log("Servidor activo en http://localhost:3000/articulos");
 // });
-
 
 ///////////////////// OK 2 //////////////////
 
@@ -245,27 +242,132 @@
 
 /////////////////// ok //////////////////
 
+// import express from "express";
+// import axios from "axios";
+// import AdmZip from "adm-zip";
+// import XLSX from "xlsx";
+// import cors from "cors";
+
+// const app = express();
+// app.use(cors());
+
+// let articulosCache = [];
+
+// async function actualizarArticulos() {
+//   try {
+//     console.log("Descargando ZIP de Okawa...");
+//     const url = "https://www.okawa.com.ar/tapice/datos/datos.zip";
+//     const response = await axios.get(url, { responseType: "arraybuffer" });
+
+//     const zip = new AdmZip(response.data);
+//     const entry = zip.getEntry("okawa-completa.xls");
+//     if (!entry) {
+//       console.error("No se encontró okawa-completa.xls en el ZIP");
+//       return;
+//     }
+
+//     const fileBuffer = entry.getData();
+//     const workbook = XLSX.read(fileBuffer, { type: "buffer" });
+//     const sheetName = workbook.SheetNames[0];
+//     const sheet = workbook.Sheets[sheetName];
+//     const data = XLSX.utils.sheet_to_json(sheet);
+
+//     articulosCache = data.map((r) => ({
+//       codigo: r.CODIGO || r.COD || r.codigo || "",
+//       descripcion: r.DESCRIPCION || r.DESCRIP || r.DES || r.descripcion || "",
+//       precio: parseFloat(r.PRECIO || r.PREC || r.price || 0),
+//       stock: r.STOCK || r.CANTIDAD || null,
+//       rubro: r.RUBRO || "",
+//       marca: r.MARCA || "",
+//       lista: r.LISTA || "",
+//       equivalente:
+//         r.EQUIVALENTE ||
+//         r.EQUIVALENC ||
+//         r.equivalenc ||
+//         r.Equivalente ||
+//         r[" EQUIVALENTE"] ||
+//         r["EQUIVALENTE "] ||
+//         "",
+//       ...r,
+//     }));
+
+//     console.log(`Artículos cargados en cache: ${articulosCache.length}`);
+//   } catch (err) {
+//     console.error("Error al actualizar artículos:", err.message);
+//   }
+// }
+
+// actualizarArticulos();
+// setInterval(actualizarArticulos, 12 * 60 * 60 * 1000);
+
+// app.get("/articulos", (req, res) => {
+//   const { page = 1, limit = 100, codigo, descripcion } = req.query;
+
+//   let resultados = articulosCache;
+
+//   if (codigo) {
+//     const codigoStr = String(codigo).toUpperCase();
+//     resultados = resultados.filter((a) => a.codigo.toUpperCase().includes(codigoStr));
+//   }
+
+//   if (descripcion) {
+//     const descStr = String(descripcion).toUpperCase();
+//     resultados = resultados.filter((a) => a.descripcion.toUpperCase().includes(descStr));
+//   }
+
+//   const pageNum = parseInt(String(page), 10);
+//   const limitNum = parseInt(String(limit), 10);
+//   const start = (pageNum - 1) * limitNum;
+//   const end = start + limitNum;
+//   const paginado = resultados.slice(start, end);
+
+//   res.json({
+//     ok: true,
+//     total: resultados.length,
+//     page: pageNum,
+//     limit: limitNum,
+//     articulos: paginado,
+//   });
+// });
+
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => {
+//   console.log(`Servidor activo en http://localhost:${PORT}/articulos`);
+// });
+
+// process.on('unhandledRejection', (err) => console.error('Unhandled Rejection:', err));
+// process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
+
+//////////////////////// ok /////////////////////////
+
 import express from "express";
 import axios from "axios";
 import AdmZip from "adm-zip";
 import XLSX from "xlsx";
 import cors from "cors";
+import cron from "node-cron";
+import fs from "fs";
 
 const app = express();
 app.use(cors());
 
+// Archivo local para persistir la cache
+const CACHE_FILE = "articulosCache.json";
 let articulosCache = [];
 
+// 🧩 Función principal: descarga, descomprime y carga los artículos
 async function actualizarArticulos() {
   try {
-    console.log("Descargando ZIP de Okawa...");
+    console.log(`[${new Date().toLocaleString()}] Descargando ZIP de Okawa...`);
+
     const url = "https://www.okawa.com.ar/tapice/datos/datos.zip";
     const response = await axios.get(url, { responseType: "arraybuffer" });
 
     const zip = new AdmZip(response.data);
     const entry = zip.getEntry("okawa-completa.xls");
+
     if (!entry) {
-      console.error("No se encontró okawa-completa.xls en el ZIP");
+      console.error("❌ No se encontró okawa-completa.xls en el ZIP");
       return;
     }
 
@@ -294,15 +396,39 @@ async function actualizarArticulos() {
       ...r,
     }));
 
-    console.log(`Artículos cargados en cache: ${articulosCache.length}`);
+    // Guardar cache en disco
+    fs.writeFileSync(CACHE_FILE, JSON.stringify(articulosCache, null, 2));
+    console.log(
+      `✅ Artículos actualizados y guardados en cache (${articulosCache.length})`
+    );
   } catch (err) {
-    console.error("Error al actualizar artículos:", err.message);
+    console.error("❌ Error al actualizar artículos:", err.message);
   }
 }
 
-actualizarArticulos();
-setInterval(actualizarArticulos, 12 * 60 * 60 * 1000);
+// 🚀 Cargar cache desde disco al iniciar (si existe)
+if (fs.existsSync(CACHE_FILE)) {
+  try {
+    const raw = fs.readFileSync(CACHE_FILE, "utf-8");
+    articulosCache = JSON.parse(raw);
+    console.log(
+      `🗂️ Cache cargado desde disco (${articulosCache.length} artículos)`
+    );
+  } catch (err) {
+    console.error("⚠️ Error al leer cache local:", err.message);
+  }
+} else {
+  console.log("⚠️ No se encontró cache local, descargando datos iniciales...");
+  actualizarArticulos();
+}
 
+// ⏰ Programar tarea automática todos los días a las 3:00 AM
+cron.schedule("0 3 * * *", async () => {
+  console.log("🕒 Ejecutando actualización diaria (3 AM)...");
+  await actualizarArticulos();
+});
+
+// 🔍 Endpoint principal
 app.get("/articulos", (req, res) => {
   const { page = 1, limit = 100, codigo, descripcion } = req.query;
 
@@ -310,12 +436,16 @@ app.get("/articulos", (req, res) => {
 
   if (codigo) {
     const codigoStr = String(codigo).toUpperCase();
-    resultados = resultados.filter((a) => a.codigo.toUpperCase().includes(codigoStr));
+    resultados = resultados.filter((a) =>
+      a.codigo?.toUpperCase().includes(codigoStr)
+    );
   }
 
   if (descripcion) {
     const descStr = String(descripcion).toUpperCase();
-    resultados = resultados.filter((a) => a.descripcion.toUpperCase().includes(descStr));
+    resultados = resultados.filter((a) =>
+      a.descripcion?.toUpperCase().includes(descStr)
+    );
   }
 
   const pageNum = parseInt(String(page), 10);
@@ -335,8 +465,13 @@ app.get("/articulos", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor activo en http://localhost:${PORT}/articulos`);
+  console.log(`✅ Servidor activo en http://localhost:${PORT}/articulos`);
 });
 
-process.on('unhandledRejection', (err) => console.error('Unhandled Rejection:', err));
-process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
+// Manejo de errores global
+process.on("unhandledRejection", (err) =>
+  console.error("⚠️ Unhandled Rejection:", err)
+);
+process.on("uncaughtException", (err) =>
+  console.error("⚠️ Uncaught Exception:", err)
+);
