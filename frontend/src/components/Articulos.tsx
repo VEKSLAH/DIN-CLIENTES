@@ -12,25 +12,50 @@ interface Articulo {
 }
 
 // Función para resaltar coincidencias
+// function highlight(text: string, query: string) {
+//   if (!query) return text;
+//   const regex = new RegExp(`(${query})`, "gi");
+//   return text.split(regex).map((part, i) =>
+//     regex.test(part) ? (
+//       <span
+//         key={i}
+//         style={{
+//           backgroundColor: "#fee2e2",
+//           color: "#dc2626",
+//           fontWeight: "bold",
+//         }}
+//       >
+//         {part}
+//       </span>
+//     ) : (
+//       part
+//     )
+//   );
+// }
+
 function highlight(text: string, query: string) {
   if (!query) return text;
+
   const regex = new RegExp(`(${query})`, "gi");
-  return text.split(regex).map((part, i) =>
-    regex.test(part) ? (
-      <span
-        key={i}
-        style={{
-          backgroundColor: "#fee2e2",
-          color: "#dc2626",
-          fontWeight: "bold",
-        }}
-      >
-        {part}
-      </span>
-    ) : (
-      part
-    )
-  );
+  const parts = text.split(regex);
+
+  return parts.map((part, i) => {
+    if (part.toLowerCase() === query.toLowerCase()) {
+      return (
+        <span
+          key={`${part}-${i}`}
+          style={{
+            backgroundColor: "#fee2e2",
+            color: "#dc2626",
+            fontWeight: "bold",
+          }}
+        >
+          {part}
+        </span>
+      );
+    }
+    return <span key={`${part}-${i}`}>{part}</span>;
+  });
 }
 
 export default function Articulos() {
