@@ -55,7 +55,7 @@ async function actualizarArticulos() {
     return;
   }
 
-  isUpdating = true; // Bloquea nuevas ejecuciones mientras dura la actualización
+  isUpdating = true;
 
   try {
     console.log(
@@ -106,7 +106,7 @@ async function actualizarArticulos() {
   } catch (err) {
     console.error("❌ Error al actualizar artículos:", err.message);
   } finally {
-    isUpdating = false; // Libera el lock al finalizar, haya error o no
+    isUpdating = false;
   }
 }
 
@@ -165,6 +165,11 @@ app.get("/articulos", async (req, res) => {
   }
 });
 
+// 🏓 Endpoint de ping para mantener la app despierta
+app.get("/ping", (req, res) => {
+  res.json({ ok: true });
+});
+
 // 🚀 Inicialización del servidor
 async function initServer() {
   try {
@@ -201,7 +206,7 @@ process.on("uncaughtException", (err) =>
   console.error("⚠️ Uncaught Exception:", err)
 );
 
-// 🚀 Endpoint manual para forzar actualización (uso interno)
+// 🚀 Endpoint manual para forzar actualización
 app.get("/actualizar", async (req, res) => {
   try {
     await actualizarArticulos();
@@ -209,5 +214,16 @@ app.get("/actualizar", async (req, res) => {
   } catch (err) {
     console.error("❌ Error en actualización manual:", err.message);
     res.status(500).json({ ok: false, error: "Error al actualizar" });
+  }
+});
+
+// 🔄 Cron interno para mantener la app despierta (ping cada 4 minutos)
+const BACKEND_URL = process.env.BACKEND_URL || "https://din-clientes.onrender.com";
+cron.schedule("*/4 * * * *", async () => {
+  try {
+    await axios.get(`${BACKEND_URL}/ping`);
+    console.log(`[${new Date().toLocaleTimeString()}] 🟢 Ping enviado`);
+  } catch (err) {
+    console.error(`[${new Date().toLocaleTimeString()}] 🔴 Error en ping:`, err.message);
   }
 });

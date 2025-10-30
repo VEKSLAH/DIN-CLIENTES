@@ -30,7 +30,6 @@ function highlight(text: string, query: string) {
   if (!query) return text;
   const regex = new RegExp(`(${query})`, "gi");
   const parts = text.split(regex);
-
   return parts.map((part, i) =>
     part.toLowerCase() === query.toLowerCase() ? (
       <span
@@ -58,9 +57,8 @@ export default function Articulos() {
   const [descripcionBuscada, setDescripcionBuscada] = useState("");
   const [paginaInput, setPaginaInput] = useState("");
 
-  const API_URL = import.meta.env.PROD
-    ? "https://din-clientes.onrender.com/articulos"
-    : "http://localhost:3000/articulos";
+  // 🔹 URL dinámica desde .env
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/articulos";
 
   // 🔄 Función de fetch
   const fetchArticulos = async (p = page) => {
