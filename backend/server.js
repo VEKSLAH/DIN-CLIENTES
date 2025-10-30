@@ -217,13 +217,18 @@ app.get("/actualizar", async (req, res) => {
   }
 });
 
-// 🔄 Cron interno para mantener la app despierta (ping cada 4 minutos)
+// 🔄 Cron interno para mantener la app despierta (ping cada 10 minutos)
 const BACKEND_URL = process.env.BACKEND_URL || "https://din-clientes.onrender.com";
-cron.schedule("*/4 * * * *", async () => {
+
+cron.schedule("*/10 * * * *", async () => {
   try {
     await axios.get(`${BACKEND_URL}/ping`);
     console.log(`[${new Date().toLocaleTimeString()}] 🟢 Ping enviado`);
   } catch (err) {
-    console.error(`[${new Date().toLocaleTimeString()}] 🔴 Error en ping:`, err.message);
+    if (err.response?.status !== 429) {
+      console.error(`[${new Date().toLocaleTimeString()}] 🔴 Error en ping:`, err.message);
+    } else {
+      console.log(`[${new Date().toLocaleTimeString()}] ⚠️ Ping rechazado (429)`);
+    }
   }
 });
