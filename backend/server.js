@@ -200,3 +200,14 @@ process.on("unhandledRejection", (err) =>
 process.on("uncaughtException", (err) =>
   console.error("⚠️ Uncaught Exception:", err)
 );
+
+// 🚀 Endpoint manual para forzar actualización (uso interno)
+app.get("/actualizar", async (req, res) => {
+  try {
+    await actualizarArticulos();
+    res.json({ ok: true, mensaje: "Artículos actualizados manualmente" });
+  } catch (err) {
+    console.error("❌ Error en actualización manual:", err.message);
+    res.status(500).json({ ok: false, error: "Error al actualizar" });
+  }
+});
