@@ -1,364 +1,66 @@
-// import express from "express";
-// import axios from "axios";
-// import AdmZip from "adm-zip";
-// import XLSX from "xlsx";
-// import cors from "cors";
-
-// const app = express();
-
-// app.use(cors());
-
-// app.get("/articulos", async (req, res) => {
-//   try {
-//     const url = "https://www.okawa.com.ar/tapice/datos/datos.zip";
-//     const response = await axios.get(url, { responseType: "arraybuffer" });
-
-//     const zip = new AdmZip(response.data);
-//     const entry = zip.getEntry("okawa-completa.xls"); // Excel con productos
-//     if (!entry) return res.json({ ok: false, error: "No se encontró okawa-completa.xls" });
-
-//     const fileBuffer = entry.getData();
-//     const workbook = XLSX.read(fileBuffer, { type: "buffer" });
-
-//     // Tomamos la primera hoja
-//     const sheetName = workbook.SheetNames[0];
-//     const sheet = workbook.Sheets[sheetName];
-
-//     // Convertimos a JSON
-//     const data = XLSX.utils.sheet_to_json(sheet);
-
-//     // Mapear campos principales
-// const articulos = data.map((r) => ({
-//   codigo: r.CODIGO || r.COD || r.codigo || "",
-//   descripcion: r.DESCRIPCION || r.DESCRIP || r.DES || r.descripcion || "",
-//   precio: parseFloat(r.PRECIO || r.PREC || r.price || 0),
-//   stock: parseInt(r.STOCK || r.CANTIDAD || 0),
-//   rubro: r.RUBRO || "",
-//   marca: r.MARCA || "",
-//   lista: r.LISTA || "",
-// }));
-
-//     // res.json({ ok: true, cantidad: articulos.length, articulos: articulos.slice(0, 50) }); // primeros 50
-//     res.json({ ok: true, cantidad: articulos.length, articulos });
-//   } catch (err) {
-//     res.json({ ok: false, error: err.message });
-//   }
-// });
-
-// app.listen(3000, () => console.log("Servidor activo en http://localhost:3000/articulos"));
-
-/////////// OK //////////////
-
-// import express from "express";
-// import axios from "axios";
-// import AdmZip from "adm-zip";
-// import XLSX from "xlsx";
-// import cors from "cors";
-
-// const app = express();
-// app.use(cors());
-
-// let articulosCache = []; // Cache de artículos en memoria
-
-// // Función para descargar y procesar el ZIP
-// async function actualizarArticulos() {
-//   try {
-//     console.log("Descargando ZIP de Okawa...");
-//     const url = "https://www.okawa.com.ar/tapice/datos/datos.zip";
-//     const response = await axios.get(url, { responseType: "arraybuffer" });
-
-//     const zip = new AdmZip(response.data);
-//     const entry = zip.getEntry("okawa-completa.xls");
-//     if (!entry) {
-//       console.error("No se encontró okawa-completa.xls en el ZIP");
-//       return;
-//     }
-
-//     const fileBuffer = entry.getData();
-//     const workbook = XLSX.read(fileBuffer, { type: "buffer" });
-//     const sheetName = workbook.SheetNames[0];
-//     const sheet = workbook.Sheets[sheetName];
-//     const data = XLSX.utils.sheet_to_json(sheet);
-
-//     articulosCache = data.map((r) => ({
-//       codigo: r.CODIGO || r.COD || r.codigo || "",
-//       descripcion: r.DESCRIPCION || r.DESCRIP || r.DES || r.descripcion || "",
-//       precio: parseFloat(r.PRECIO || r.PREC || r.price || 0),
-//       stock: r.STOCK || r.CANTIDAD || null,
-//       rubro: r.RUBRO || "",
-//       marca: r.MARCA || "",
-//       lista: r.LISTA || "",
-//       // Guardamos todos los demás campos por si hacen falta
-//       ...r,
-//     }));
-
-//     console.log(`Artículos cargados en cache: ${articulosCache.length}`);
-//   } catch (err) {
-//     console.error("Error al actualizar artículos:", err.message);
-//   }
-// }
-
-// // Actualizar al iniciar el servidor
-// actualizarArticulos();
-
-// // Actualizar cada 12 horas (12 * 60 * 60 * 1000 ms)
-// setInterval(actualizarArticulos, 12 * 60 * 60 * 1000);
-
-// // Endpoint con paginación y búsqueda por código
-// app.get("/articulos", (req, res) => {
-//   const { page = 1, limit = 100, codigo } = req.query;
-
-//   let resultados = articulosCache;
-
-//   // Filtrar por código si se envía
-//   if (codigo) {
-//     const codigoStr = String(codigo).toUpperCase();
-//     resultados = resultados.filter((a) => a.codigo.toUpperCase().includes(codigoStr));
-//   }
-
-//   // Paginación
-//   const pageNum = parseInt(page, 10);
-//   const limitNum = parseInt(limit, 10);
-//   const start = (pageNum - 1) * limitNum;
-//   const end = start + limitNum;
-//   const paginado = resultados.slice(start, end);
-
-//   res.json({
-//     ok: true,
-//     total: resultados.length,
-//     page: pageNum,
-//     limit: limitNum,
-//     articulos: paginado,
-//   });
-// });
-
-// app.listen(3000, () => {
-//   console.log("Servidor activo en http://localhost:3000/articulos");
-// });
-
-///////////////////// OK 2 //////////////////
-
-// import express from "express";
-// import axios from "axios";
-// import AdmZip from "adm-zip";
-// import XLSX from "xlsx";
-// import cors from "cors";
-
-// const app = express();
-// app.use(cors());
-
-// let articulosCache = []; // Cache de artículos en memoria
-
-// // Función para descargar y procesar el ZIP
-// async function actualizarArticulos() {
-//   try {
-//     console.log("Descargando ZIP de Okawa...");
-//     const url = "https://www.okawa.com.ar/tapice/datos/datos.zip";
-//     const response = await axios.get(url, { responseType: "arraybuffer" });
-
-//     const zip = new AdmZip(response.data);
-//     const entry = zip.getEntry("okawa-completa.xls");
-//     if (!entry) {
-//       console.error("No se encontró okawa-completa.xls en el ZIP");
-//       return;
-//     }
-
-//     const fileBuffer = entry.getData();
-//     const workbook = XLSX.read(fileBuffer, { type: "buffer" });
-//     const sheetName = workbook.SheetNames[0];
-//     const sheet = workbook.Sheets[sheetName];
-//     const data = XLSX.utils.sheet_to_json(sheet);
-
-//     articulosCache = data.map((r) => ({
-//       codigo: r.CODIGO || r.COD || r.codigo || "",
-//       descripcion: r.DESCRIPCION || r.DESCRIP || r.DES || r.descripcion || "",
-//       precio: parseFloat(r.PRECIO || r.PREC || r.price || 0),
-//       stock: r.STOCK || r.CANTIDAD || null,
-//       rubro: r.RUBRO || "",
-//       marca: r.MARCA || "",
-//       lista: r.LISTA || "",
-//       stock: r.STOCK || "",
-//       equivalente:
-//     r.EQUIVALENTE ||
-//     r.EQUIVALENC ||
-//     r.equivalenc ||
-//     r.Equivalente ||
-//     r.Equivalenc ||
-//     r[" EQUIVALENTE"] ||
-//     r["EQUIVALENTE "] ||
-//     "",
-//       ...r,
-//     }));
-
-//     console.log(`Artículos cargados en cache: ${articulosCache.length}`);
-//   } catch (err) {
-//     console.error("Error al actualizar artículos:", err.message);
-//   }
-// }
-
-// // Actualizar al iniciar el servidor
-// actualizarArticulos();
-
-// // Actualizar cada 12 horas
-// setInterval(actualizarArticulos, 12 * 60 * 60 * 1000);
-
-// // Endpoint con paginación y búsqueda por código y descripción
-// app.get("/articulos", (req, res) => {
-//   const { page = 1, limit = 100, codigo, descripcion } = req.query;
-
-//   let resultados = articulosCache;
-
-//   // Filtrar por código si se envía
-//   if (codigo) {
-//     const codigoStr = String(codigo).toUpperCase();
-//     resultados = resultados.filter((a) => a.codigo.toUpperCase().includes(codigoStr));
-//   }
-
-//   // Filtrar por descripción si se envía
-//   if (descripcion) {
-//     const descStr = String(descripcion).toUpperCase();
-//     resultados = resultados.filter((a) => a.descripcion.toUpperCase().includes(descStr));
-//   }
-
-//   // Paginación
-//   const pageNum = parseInt(String(page), 10);
-//   const limitNum = parseInt(String(limit), 10);
-//   const start = (pageNum - 1) * limitNum;
-//   const end = start + limitNum;
-//   const paginado = resultados.slice(start, end);
-
-//   res.json({
-//     ok: true,
-//     total: resultados.length,
-//     page: pageNum,
-//     limit: limitNum,
-//     articulos: paginado,
-//   });
-// });
-
-// app.listen(3000, () => {
-//   console.log("Servidor activo en http://localhost:3000/articulos");
-// });
-
-/////////////////// ok //////////////////
-
-// import express from "express";
-// import axios from "axios";
-// import AdmZip from "adm-zip";
-// import XLSX from "xlsx";
-// import cors from "cors";
-
-// const app = express();
-// app.use(cors());
-
-// let articulosCache = [];
-
-// async function actualizarArticulos() {
-//   try {
-//     console.log("Descargando ZIP de Okawa...");
-//     const url = "https://www.okawa.com.ar/tapice/datos/datos.zip";
-//     const response = await axios.get(url, { responseType: "arraybuffer" });
-
-//     const zip = new AdmZip(response.data);
-//     const entry = zip.getEntry("okawa-completa.xls");
-//     if (!entry) {
-//       console.error("No se encontró okawa-completa.xls en el ZIP");
-//       return;
-//     }
-
-//     const fileBuffer = entry.getData();
-//     const workbook = XLSX.read(fileBuffer, { type: "buffer" });
-//     const sheetName = workbook.SheetNames[0];
-//     const sheet = workbook.Sheets[sheetName];
-//     const data = XLSX.utils.sheet_to_json(sheet);
-
-//     articulosCache = data.map((r) => ({
-//       codigo: r.CODIGO || r.COD || r.codigo || "",
-//       descripcion: r.DESCRIPCION || r.DESCRIP || r.DES || r.descripcion || "",
-//       precio: parseFloat(r.PRECIO || r.PREC || r.price || 0),
-//       stock: r.STOCK || r.CANTIDAD || null,
-//       rubro: r.RUBRO || "",
-//       marca: r.MARCA || "",
-//       lista: r.LISTA || "",
-//       equivalente:
-//         r.EQUIVALENTE ||
-//         r.EQUIVALENC ||
-//         r.equivalenc ||
-//         r.Equivalente ||
-//         r[" EQUIVALENTE"] ||
-//         r["EQUIVALENTE "] ||
-//         "",
-//       ...r,
-//     }));
-
-//     console.log(`Artículos cargados en cache: ${articulosCache.length}`);
-//   } catch (err) {
-//     console.error("Error al actualizar artículos:", err.message);
-//   }
-// }
-
-// actualizarArticulos();
-// setInterval(actualizarArticulos, 12 * 60 * 60 * 1000);
-
-// app.get("/articulos", (req, res) => {
-//   const { page = 1, limit = 100, codigo, descripcion } = req.query;
-
-//   let resultados = articulosCache;
-
-//   if (codigo) {
-//     const codigoStr = String(codigo).toUpperCase();
-//     resultados = resultados.filter((a) => a.codigo.toUpperCase().includes(codigoStr));
-//   }
-
-//   if (descripcion) {
-//     const descStr = String(descripcion).toUpperCase();
-//     resultados = resultados.filter((a) => a.descripcion.toUpperCase().includes(descStr));
-//   }
-
-//   const pageNum = parseInt(String(page), 10);
-//   const limitNum = parseInt(String(limit), 10);
-//   const start = (pageNum - 1) * limitNum;
-//   const end = start + limitNum;
-//   const paginado = resultados.slice(start, end);
-
-//   res.json({
-//     ok: true,
-//     total: resultados.length,
-//     page: pageNum,
-//     limit: limitNum,
-//     articulos: paginado,
-//   });
-// });
-
-// const PORT = process.env.PORT || 3000;
-// app.listen(PORT, () => {
-//   console.log(`Servidor activo en http://localhost:${PORT}/articulos`);
-// });
-
-// process.on('unhandledRejection', (err) => console.error('Unhandled Rejection:', err));
-// process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
-
-//////////////////////// ok /////////////////////////
-
 import express from "express";
 import axios from "axios";
 import AdmZip from "adm-zip";
 import XLSX from "xlsx";
 import cors from "cors";
 import cron from "node-cron";
-import fs from "fs";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
 
-// Archivo local para persistir la cache
-const CACHE_FILE = "articulosCache.json";
-let articulosCache = [];
+// 🧩 Conexión a MongoDB Atlas
+const MONGO_URI = process.env.MONGO_URI;
 
-// 🧩 Función principal: descarga, descomprime y carga los artículos
+if (!MONGO_URI) {
+  console.error("❌ Error: falta la variable MONGO_URI en el archivo .env");
+  process.exit(1);
+}
+
+try {
+  await mongoose.connect(MONGO_URI);
+  console.log("✅ Conectado a MongoDB Atlas");
+} catch (err) {
+  console.error("❌ Error al conectar a MongoDB:", err.message);
+  process.exit(1);
+}
+
+// 🧱 Esquema y modelo de artículo
+const articuloSchema = new mongoose.Schema({
+  codigo: String,
+  descripcion: String,
+  precio: Number,
+  stock: mongoose.Schema.Types.Mixed,
+  rubro: String,
+  marca: String,
+  lista: String,
+  equivalente: String,
+});
+
+const Articulo = mongoose.model("Articulo", articuloSchema);
+
+// 🧠 Cache local y flag de actualización
+let articulosCache = [];
+let isUpdating = false;
+
+// 📦 Función: descarga y actualiza artículos desde Okawa
 async function actualizarArticulos() {
+  if (isUpdating) {
+    console.log(
+      "⚠️ Ya hay una actualización en curso, se omite esta ejecución."
+    );
+    return;
+  }
+
+  isUpdating = true; // Bloquea nuevas ejecuciones mientras dura la actualización
+
   try {
-    console.log(`[${new Date().toLocaleString()}] Descargando ZIP de Okawa...`);
+    console.log(
+      `[${new Date().toLocaleString()}] 🔄 Descargando datos de Okawa...`
+    );
 
     const url = "https://www.okawa.com.ar/tapice/datos/datos.zip";
     const response = await axios.get(url, { responseType: "arraybuffer" });
@@ -367,20 +69,20 @@ async function actualizarArticulos() {
     const entry = zip.getEntry("okawa-completa.xls");
 
     if (!entry) {
-      console.error("❌ No se encontró okawa-completa.xls en el ZIP");
+      console.error(
+        "❌ No se encontró el archivo okawa-completa.xls en el ZIP"
+      );
       return;
     }
 
-    const fileBuffer = entry.getData();
-    const workbook = XLSX.read(fileBuffer, { type: "buffer" });
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-    const data = XLSX.utils.sheet_to_json(sheet);
+    const workbook = XLSX.read(entry.getData(), { type: "buffer" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
-    articulosCache = data.map((r) => ({
-      codigo: r.CODIGO || r.COD || r.codigo || "",
-      descripcion: r.DESCRIPCION || r.DESCRIP || r.DES || r.descripcion || "",
-      precio: parseFloat(r.PRECIO || r.PREC || r.price || 0),
+    const nuevosArticulos = data.map((r) => ({
+      codigo: r.CODIGO || r.COD || "",
+      descripcion: r.DESCRIPCION || r.DESCRIP || "",
+      precio: parseFloat(r.PRECIO || r.PREC || 0),
       stock: r.STOCK || r.CANTIDAD || null,
       rubro: r.RUBRO || "",
       marca: r.MARCA || "",
@@ -389,88 +91,109 @@ async function actualizarArticulos() {
         r.EQUIVALENTE ||
         r.EQUIVALENC ||
         r.equivalenc ||
-        r.Equivalente ||
         r[" EQUIVALENTE"] ||
         r["EQUIVALENTE "] ||
         "",
-      ...r,
     }));
 
-    // Guardar cache en disco
-    fs.writeFileSync(CACHE_FILE, JSON.stringify(articulosCache, null, 2));
-    console.log(`✅ Artículos actualizados y guardados en cache (${articulosCache.length})`);
+    await Articulo.deleteMany({});
+    await Articulo.insertMany(nuevosArticulos);
+    articulosCache = nuevosArticulos;
+
+    console.log(
+      `✅ Base de datos actualizada con ${nuevosArticulos.length} artículos`
+    );
   } catch (err) {
     console.error("❌ Error al actualizar artículos:", err.message);
+  } finally {
+    isUpdating = false; // Libera el lock al finalizar, haya error o no
   }
 }
 
-// ⏰ Programar tarea automática todos los días a las 3:00 AM
+// ⏰ Cron: ejecuta actualización diaria a las 3:00 AM
 cron.schedule("0 3 * * *", async () => {
   console.log("🕒 Ejecutando actualización diaria (3 AM)...");
   await actualizarArticulos();
 });
 
-// 🔍 Endpoint principal
-app.get("/articulos", (req, res) => {
+// 🔍 Endpoint principal con paginación y filtros
+app.get("/articulos", async (req, res) => {
   const { page = 1, limit = 100, codigo, descripcion } = req.query;
 
-  let resultados = articulosCache;
+  try {
+    let resultados = articulosCache;
 
-  if (codigo) {
-    const codigoStr = String(codigo).toUpperCase();
-    resultados = resultados.filter((a) =>
-      a.codigo?.toUpperCase().includes(codigoStr)
-    );
+    if (!resultados.length) {
+      resultados = await Articulo.find().lean();
+      articulosCache = resultados;
+      console.log(
+        `📄 Cache cargada desde MongoDB (${resultados.length} artículos)`
+      );
+    }
+
+    let filtrados = resultados;
+
+    if (codigo) {
+      const codigoStr = String(codigo).toUpperCase();
+      filtrados = filtrados.filter((a) =>
+        a.codigo?.toUpperCase().includes(codigoStr)
+      );
+    }
+
+    if (descripcion) {
+      const descStr = String(descripcion).toUpperCase();
+      filtrados = filtrados.filter((a) =>
+        a.descripcion?.toUpperCase().includes(descStr)
+      );
+    }
+
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const start = (pageNum - 1) * limitNum;
+    const end = start + limitNum;
+
+    res.json({
+      ok: true,
+      total: filtrados.length,
+      page: pageNum,
+      limit: limitNum,
+      articulos: filtrados.slice(start, end),
+    });
+  } catch (err) {
+    console.error("❌ Error en /articulos:", err.message);
+    res.status(500).json({ ok: false, error: "Error interno del servidor" });
   }
-
-  if (descripcion) {
-    const descStr = String(descripcion).toUpperCase();
-    resultados = resultados.filter((a) =>
-      a.descripcion?.toUpperCase().includes(descStr)
-    );
-  }
-
-  const pageNum = parseInt(String(page), 10);
-  const limitNum = parseInt(String(limit), 10);
-  const start = (pageNum - 1) * limitNum;
-  const end = start + limitNum;
-  const paginado = resultados.slice(start, end);
-
-  res.json({
-    ok: true,
-    total: resultados.length,
-    page: pageNum,
-    limit: limitNum,
-    articulos: paginado,
-  });
 });
 
-// 🔑 Inicialización segura del servidor
+// 🚀 Inicialización del servidor
 async function initServer() {
-  if (fs.existsSync(CACHE_FILE)) {
-    try {
-      const raw = fs.readFileSync(CACHE_FILE, "utf-8");
-      articulosCache = JSON.parse(raw);
-      console.log(`🗂️ Cache cargado desde disco (${articulosCache.length} artículos)`);
-    } catch (err) {
-      console.error("⚠️ Error al leer cache local:", err.message);
+  try {
+    const count = await Articulo.countDocuments();
+    if (count === 0) {
+      console.log(
+        "⚠️ No hay artículos en la base. Descargando datos iniciales..."
+      );
       await actualizarArticulos();
+    } else {
+      articulosCache = await Articulo.find().lean();
+      console.log(
+        `🗂️ Cache inicial cargada (${articulosCache.length} artículos)`
+      );
     }
-  } else {
-    console.log("⚠️ No se encontró cache local, descargando datos iniciales...");
-    await actualizarArticulos();
-  }
 
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`✅ Servidor activo en http://localhost:${PORT}/articulos`);
-  });
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () =>
+      console.log(`✅ Servidor activo en http://localhost:${PORT}/articulos`)
+    );
+  } catch (err) {
+    console.error("❌ Error al iniciar el servidor:", err.message);
+    process.exit(1);
+  }
 }
 
-// Ejecutar inicialización
 initServer();
 
-// Manejo de errores global
+// ⚠️ Manejadores globales de errores
 process.on("unhandledRejection", (err) =>
   console.error("⚠️ Unhandled Rejection:", err)
 );

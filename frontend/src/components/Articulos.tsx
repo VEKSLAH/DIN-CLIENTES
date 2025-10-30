@@ -4,14 +4,13 @@ interface Articulo {
   codigo: string;
   descripcion: string;
   precio: number;
-  stock: "S" | "N" | "C" | null; // stock con valores posibles
+  stock: "S" | "N" | "C" | null;
   rubro: string;
   marca: string;
   lista: string;
   equivalente: string;
 }
 
-// Tipos literales para stock
 type StockValue = "S" | "N" | "C";
 
 const stockColor: Record<StockValue, string> = {
@@ -21,12 +20,12 @@ const stockColor: Record<StockValue, string> = {
 };
 
 const stockText: Record<StockValue, string> = {
-  S: "Este artículo esta disponible",
-  N: "Este artículo no esta disponible",
+  S: "Este artículo está disponible",
+  N: "Este artículo no está disponible",
   C: "Consultar disponibilidad",
 };
 
-// Función para resaltar texto buscado
+// Resalta coincidencias de búsqueda
 function highlight(text: string, query: string) {
   if (!query) return text;
   const regex = new RegExp(`(${query})`, "gi");
@@ -63,6 +62,7 @@ export default function Articulos() {
     ? "https://din-clientes.onrender.com/articulos"
     : "http://localhost:3000/articulos";
 
+  // 🔄 Función de fetch
   const fetchArticulos = async (p = page) => {
     setLoading(true);
     setError(null);
@@ -83,7 +83,6 @@ export default function Articulos() {
       setTotal(data.total);
       setPage(data.page);
       setPaginaInput("");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -91,12 +90,14 @@ export default function Articulos() {
     }
   };
 
+  // 🔎 Efecto de búsqueda
   useEffect(() => {
     const timeout = setTimeout(() => fetchArticulos(1), 300);
     return () => clearTimeout(timeout);
   }, [codigoBuscado, descripcionBuscada]);
 
   const totalPages = Math.ceil(total / limit);
+
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
     fetchArticulos(newPage);
@@ -123,7 +124,7 @@ export default function Articulos() {
           placeholder="Buscar por descripción"
           value={descripcionBuscada}
           onChange={(e) => setDescripcionBuscada(e.target.value)}
-          className="flex-[2] border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 focus:outline-none"
+          className="flex-2 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 focus:outline-none"
         />
       </div>
 
@@ -158,7 +159,7 @@ export default function Articulos() {
           <tbody>
             {articulos.map((art, idx) => (
               <tr
-                key={art.codigo}
+                key={art.codigo + idx}
                 className={`border-b border-gray-100 transition ${
                   idx % 2 === 0 ? "bg-gray-50" : "bg-white"
                 } hover:bg-red-50`}
