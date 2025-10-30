@@ -117,8 +117,9 @@ cron.schedule("0 3 * * *", async () => {
 });
 
 // 🔍 Endpoint principal con paginación y filtros
+// 🔍 Endpoint principal con paginación y filtros
 app.get("/articulos", async (req, res) => {
-  const { page = 1, limit = 100, codigo, descripcion } = req.query;
+  const { page = 1, limit = 100, codigo, descripcion, disponibilidad } = req.query;
 
   try {
     let resultados = articulosCache;
@@ -133,6 +134,7 @@ app.get("/articulos", async (req, res) => {
 
     let filtrados = resultados;
 
+    // 🔎 Filtro por código
     if (codigo) {
       const codigoStr = String(codigo).toUpperCase();
       filtrados = filtrados.filter((a) =>
@@ -140,6 +142,7 @@ app.get("/articulos", async (req, res) => {
       );
     }
 
+    // 🔎 Filtro por descripción
     if (descripcion) {
       const descStr = String(descripcion).toUpperCase();
       filtrados = filtrados.filter((a) =>
@@ -147,6 +150,46 @@ app.get("/articulos", async (req, res) => {
       );
     }
 
+    // 🧩 Filtro por disponibilidad
+    if (disponibilidad) {
+      const d = disponibilidad.toUpperCase();
+      filtrados = filtrados.filter((a) => {
+        const stockVal = a.stock?.toString().trim().toUpperCase();
+
+        if (d === "S") {
+          // Disponible
+          return (
+            (typeof a.stock === "number" && a.stock > 0) ||
+            stockVal === "S" ||
+            stockVal === "DISPONIBLE"
+          );
+        }
+
+        if (d === "N") {
+          // No disponible
+          return (
+            a.stock === 0 ||
+            stockVal === "N" ||
+            stockVal === "NO DISPONIBLE" ||
+            stockVal === "" ||
+            stockVal === "0"
+          );
+        }
+
+        if (d === "C") {
+          // Consultar disponibilidad
+          return (
+            stockVal === "C" ||
+            stockVal === "CONSULTAR" ||
+            stockVal === "CONSULTAR DISPONIBILIDAD"
+          );
+        }
+
+        return true;
+      });
+    }
+
+    // 📄 Paginación
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
     const start = (pageNum - 1) * limitNum;
@@ -164,6 +207,7 @@ app.get("/articulos", async (req, res) => {
     res.status(500).json({ ok: false, error: "Error interno del servidor" });
   }
 });
+
 
 // 🏓 Endpoint de ping para mantener la app despierta
 app.get("/ping", (req, res) => {
