@@ -28,7 +28,7 @@ const Card: React.FC<CardProps> = ({ children, logoSrc, title }) => {
                 <img
                   src={logoSrc}
                   alt="Logo"
-                  className="h-16 w-16 object-contain bg-white/10 p-1 rounded-xl"
+                  className="h-16 w-16 object-contain p-1 rounded-xl"
                 />
               )}
               {title && (
