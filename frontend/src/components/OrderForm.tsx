@@ -18,7 +18,7 @@ export default function OrderForm({ order, setOrder }: Props) {
   const [mensajeError, setMensajeError] = useState("");
 
   const total = order.reduce(
-    (acc, item) => acc + item.precio * item.cantidad,
+    (acc, item) => acc + item.precio * 0.87 * 2.2 * item.cantidad,
     0
   );
 
