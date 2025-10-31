@@ -127,30 +127,18 @@ async function actualizarArticulos() {
   }
 }
 
-// ⏰ Cron: ejecuta actualización diaria a las 3:00 AM
-// cron.schedule(
-//   "0 3 * * *",
-//   async () => {
-//     console.log("🕒 Ejecutando actualización diaria (3 AM Argentina)...");
-//     await actualizarArticulos();
-//   },
-//   {
-//     timezone: "America/Argentina/Buenos_Aires",
-//   }
-// );
+ // ⏰ Cron: ejecuta actualización diaria a las 3:00 AM
+ cron.schedule(
+   "0 3 * * *",
+   async () => {
+     console.log("🕒 Ejecutando actualización diaria (3 AM Argentina)...");
+     await actualizarArticulos();
+   },
+   {
+     timezone: "America/Argentina/Buenos_Aires",
+   }
+ );
 
-cron.schedule(
-  "50 9 * * *",
-  async () => {
-    console.log("🕒 Ejecutando actualización de prueba (9:50)...");
-    await actualizarArticulos();
-  },
-  {
-    timezone: "America/Argentina/Buenos_Aires",
-  }
-);
-
-// 🔍 Endpoint principal con paginación y filtros
 // 🔍 Endpoint principal con paginación y filtros
 app.get("/articulos", async (req, res) => {
   const {
@@ -182,7 +170,6 @@ app.get("/articulos", async (req, res) => {
       );
     }
 
-    // 🔎 Filtro por descripción
     if (descripcion) {
       const descStr = String(descripcion).toUpperCase();
       filtrados = filtrados.filter((a) =>
@@ -190,14 +177,12 @@ app.get("/articulos", async (req, res) => {
       );
     }
 
-    // 🧩 Filtro por disponibilidad
     if (disponibilidad) {
       const d = disponibilidad.toUpperCase();
       filtrados = filtrados.filter((a) => {
         const stockVal = a.stock?.toString().trim().toUpperCase();
 
         if (d === "S") {
-          // Disponible
           return (
             (typeof a.stock === "number" && a.stock > 0) ||
             stockVal === "S" ||
@@ -206,7 +191,6 @@ app.get("/articulos", async (req, res) => {
         }
 
         if (d === "N") {
-          // No disponible
           return (
             a.stock === 0 ||
             stockVal === "N" ||
@@ -217,7 +201,6 @@ app.get("/articulos", async (req, res) => {
         }
 
         if (d === "C") {
-          // Consultar disponibilidad
           return (
             stockVal === "C" ||
             stockVal === "CONSULTAR" ||
@@ -229,7 +212,6 @@ app.get("/articulos", async (req, res) => {
       });
     }
 
-    // 📄 Paginación
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
     const start = (pageNum - 1) * limitNum;
@@ -248,7 +230,7 @@ app.get("/articulos", async (req, res) => {
   }
 });
 
-// 🏓 Endpoint de ping para mantener la app despierta
+// 🏓 Endpoint de ping para mantener la app activa
 app.get("/ping", (req, res) => {
   res.json({ ok: true });
 });
@@ -281,7 +263,7 @@ async function initServer() {
 
 initServer();
 
-// ⚠️ Manejadores globales de errores
+// ⚠️ Manejo de errores
 process.on("unhandledRejection", (err) =>
   console.error("⚠️ Unhandled Rejection:", err)
 );
@@ -300,7 +282,7 @@ app.get("/actualizar", async (req, res) => {
   }
 });
 
-// 🔄 Cron interno para mantener la app despierta (ping cada 10 minutos)
+// 🔄 Cron interno para mantener la app activa (ping cada 10 minutos)
 const BACKEND_URL =
   process.env.BACKEND_URL || "https://din-clientes.onrender.com";
 

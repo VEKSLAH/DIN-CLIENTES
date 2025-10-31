@@ -217,14 +217,15 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
           <thead className="sticky top-0 bg-red-600 text-white text-left shadow-sm z-10">
             <tr>
               {[
+                "Agregar",
                 "Código",
                 "Descripción",
                 "Precio",
                 "Rubro",
-                "Marca",
+                "Marca Artículo",
+                "Marca Vehículo",
                 "Stock",
                 "Equivalencia",
-                "Agregar",
               ].map((header) => (
                 <th key={header} className="p-2 font-semibold">
                   {header}
@@ -255,33 +256,6 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
                       idx % 2 === 0 ? "bg-gray-50" : "bg-white"
                     } hover:bg-red-50`}
                   >
-                    <td className="p-2 font-medium text-gray-800">
-                      {highlight(art.codigo, codigo)}
-                    </td>
-                    <td className="p-2 text-gray-700">
-                      {highlight(
-                        art.descripcion || "Sin descripción",
-                        descripcion
-                      )}
-                    </td>
-                    <td className="p-2 text-gray-800 font-semibold">
-                      ${art.precio.toLocaleString("es-AR")}
-                    </td>
-                    <td className="p-2 text-gray-600">{art.rubro}</td>
-                    <td className="p-2 text-gray-600">{art.marca}</td>
-                    <td className="p-2 text-center">
-                      {art.stock ? (
-                        <div
-                          className={`h-4 w-4 rounded-full inline-block ${
-                            stockColor[art.stock]
-                          }`}
-                          title={stockText[art.stock]}
-                        />
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </td>
-                    <td className="p-2 text-gray-600">{art.equivalente}</td>
                     <td className="p-2 text-center">
                       <button
                         onClick={() => handleAdd(art)}
@@ -296,6 +270,34 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
                         {added === art.codigo ? "✔" : "+"}
                       </button>
                     </td>
+                    <td className="p-2 font-medium text-gray-800">
+                      {highlight(art.codigo, codigo)}
+                    </td>
+                    <td className="p-2 text-gray-700">
+                      {highlight(
+                        art.descripcion || "Sin descripción",
+                        descripcion
+                      )}
+                    </td>
+                    <td className="p-2 text-gray-800 font-semibold">
+                      ${art.precio.toLocaleString("es-AR")}
+                    </td>
+                    <td className="p-2 text-gray-600">{art.rubro}</td>
+                    <td className="p-2 text-gray-600">{art.marca}</td>
+                    <td className="p-2 text-gray-600">{art.lista}</td>
+                    <td className="p-2 text-center">
+                      {art.stock ? (
+                        <div
+                          className={`h-4 w-4 rounded-full inline-block ${
+                            stockColor[art.stock]
+                          }`}
+                          title={stockText[art.stock]}
+                        />
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="p-2 text-gray-600">{art.equivalente}</td>
                   </tr>
                 ))
               )}
