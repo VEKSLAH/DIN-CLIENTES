@@ -15,6 +15,8 @@ export default function OrderForm({ order, setOrder }: Props) {
     email: "",
   });
 
+  const [mensajeError, setMensajeError] = useState("");
+
   const total = order.reduce(
     (acc, item) => acc + item.precio * item.cantidad,
     0
@@ -39,13 +41,29 @@ export default function OrderForm({ order, setOrder }: Props) {
     localStorage.removeItem("pedido");
   };
 
+  const validarCampos = () => {
+    if (!cliente.nombre || !cliente.whatsapp || !cliente.email) {
+      setMensajeError("⚠️ Completá todos los campos antes de enviar.");
+      return false;
+    }
+    if (order.length === 0) {
+      setMensajeError("🧾 Agregá al menos un artículo al pedido.");
+      return false;
+    }
+    setMensajeError("");
+    return true;
+  };
+
   const handleSendWhatsApp = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-
-    if (!cliente.nombre || order.length === 0) return;
+    if (!validarCampos()) return;
 
     const numero = "1165512113";
-    const mensaje = `*Nuevo pedido desde DIN Clientes*%0A%0A👤 *Cliente:* ${cliente.nombre}%0A📱 *WhatsApp:* ${cliente.whatsapp}%0A✉️ *Email:* ${cliente.email}%0A%0A🧾 *Detalle del pedido:*%0A${order
+    const mensaje = `*Nuevo pedido desde DIN Clientes*%0A%0A👤 *Cliente:* ${
+      cliente.nombre
+    }%0A📱 *WhatsApp:* ${cliente.whatsapp}%0A✉️ *Email:* ${
+      cliente.email
+    }%0A%0A🧾 *Detalle del pedido:*%0A${order
       .map(
         (item) =>
           `• ${item.descripcion} (${item.codigo}) x${item.cantidad} — $${(
@@ -58,47 +76,58 @@ export default function OrderForm({ order, setOrder }: Props) {
     const win = window.open(url, "_blank");
     if (win) win.focus();
   };
+  //// Se comenta codigo para futura implementacion ////
+  //   const handleSendEmail = (e: React.MouseEvent<HTMLButtonElement>) => {
+  //     e.preventDefault();
+  //     if (!validarCampos()) return;
 
-  const handleSendEmail = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
+  //     const destinatario = "ventas@din.com.ar";
+  //     const asunto = `Nuevo pedido - ${cliente.nombre}`;
+  //     const cuerpo = `Nuevo pedido desde DIN Clientes
 
-    if (!cliente.nombre || order.length === 0) return;
+  // Cliente: ${cliente.nombre}
+  // WhatsApp: ${cliente.whatsapp}
+  // Email: ${cliente.email}
 
-    const destinatario = "ventas@din.com.ar";
-    const asunto = `Nuevo pedido - ${cliente.nombre}`;
-    const cuerpo = `Nuevo pedido desde DIN Clientes
+  // Detalle del pedido:
+  // ${order
+  //   .map(
+  //     (item) =>
+  //       `• ${item.descripcion} (${item.codigo}) x${item.cantidad} — $${(
+  //         item.precio * item.cantidad
+  //       ).toLocaleString("es-AR")}`
+  //   )
+  //   .join("\n")}
 
-Cliente: ${cliente.nombre}
-WhatsApp: ${cliente.whatsapp}
-Email: ${cliente.email}
+  // Total: $${total.toLocaleString("es-AR")}
+  // `;
 
-Detalle del pedido:
-${order
-  .map(
-    (item) =>
-      `• ${item.descripcion} (${item.codigo}) x${item.cantidad} — $${(
-        item.precio * item.cantidad
-      ).toLocaleString("es-AR")}`
-  )
-  .join("\n")}
+  //     const mailtoLink = `mailto:${destinatario}?subject=${encodeURIComponent(
+  //       asunto
+  //     )}&body=${encodeURIComponent(cuerpo)}`;
 
-Total: $${total.toLocaleString("es-AR")}
-`;
+  //     const a = document.createElement("a");
+  //     a.href = mailtoLink;
+  //     a.click();
 
-    const mailtoLink = `mailto:${destinatario}?subject=${encodeURIComponent(
-      asunto
-    )}&body=${encodeURIComponent(cuerpo)}`;
-
-    const a = document.createElement("a");
-    a.href = mailtoLink;
-    a.click();
-  };
-
+  //     setTimeout(() => {
+  //       setMensajeError(
+  //         "📧 Si no se abrió tu cliente de correo, copiá la dirección: ventas@din.com.ar"
+  //       );
+  //     }, 1000);
+  //   };
+  //// Se comenta codigo para futura implementacion ////
   return (
     <div>
       <h2 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2 mb-3">
         Pedido
       </h2>
+
+      {mensajeError && (
+        <div className="mb-3 text-xs text-red-600 bg-red-100 border border-red-300 rounded-md px-3 py-2">
+          {mensajeError}
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-2 mb-4">
         <input
@@ -124,6 +153,7 @@ Total: $${total.toLocaleString("es-AR")}
         />
       </div>
 
+      {/* Lista de artículos */}
       <div className="border border-gray-200 rounded-md overflow-hidden max-h-60 overflow-y-auto shadow-inner">
         {order.length === 0 ? (
           <p className="text-gray-500 text-center py-6">
@@ -187,17 +217,19 @@ Total: $${total.toLocaleString("es-AR")}
           <button
             onClick={handleSendWhatsApp}
             className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition"
-            disabled={!cliente.nombre || order.length === 0}
           >
             Enviar por WhatsApp
           </button>
-          <button
+          {/* Se comementa boton para implementacion futura */}
+
+          {/* <button
             onClick={handleSendEmail}
             className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition"
-            disabled={!cliente.nombre || order.length === 0}
           >
             Enviar por Email
-          </button>
+          </button> */}
+
+          {/* Se comementa boton para implementacion futura */}
           <button
             onClick={handleClear}
             className="border-2 border-red-600 hover:border-red-500 text-red-500 px-3 py-1 rounded-md hover:bg-red-500 hover:text-white transition duration-300"
