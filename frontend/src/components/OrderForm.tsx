@@ -17,10 +17,27 @@ export default function OrderForm({ order, setOrder }: Props) {
 
   const [mensajeError, setMensajeError] = useState("");
 
+  // Total con factor aplicado
   const total = order.reduce(
     (acc, item) => acc + item.precio * 0.87 * 2.2 * item.cantidad,
     0
   );
+
+  // Agregar artículo sumando cantidad si ya existe
+  // const handleAddItem = (nuevoItem: OrderItem) => {
+  //   setOrder((prev) => {
+  //     const existe = prev.find((item) => item.codigo === nuevoItem.codigo);
+  //     if (existe) {
+  //       return prev.map((item) =>
+  //         item.codigo === nuevoItem.codigo
+  //           ? { ...item, cantidad: item.cantidad + nuevoItem.cantidad }
+  //           : item
+  //       );
+  //     } else {
+  //       return [...prev, nuevoItem];
+  //     }
+  //   });
+  // };
 
   const handleRemove = (codigo: string) => {
     setOrder((prev) => prev.filter((item) => item.codigo !== codigo));
@@ -70,16 +87,15 @@ export default function OrderForm({ order, setOrder }: Props) {
           precioFinal * item.cantidad
         ).toLocaleString("es-AR", { minimumFractionDigits: 2 })}`;
       })
-      .join("%0A")}%0A%0A💰 *Total:* $${(total * 0.87 * 2.2).toLocaleString(
-      "es-AR",
-      { minimumFractionDigits: 2 }
-    )}`;
+      .join("%0A")}%0A%0A💰 *Total:* $${total.toLocaleString("es-AR", {
+      minimumFractionDigits: 2,
+    })}`;
 
     const url = `https://wa.me/549${numero}?text=${mensaje}`;
     const win = window.open(url, "_blank");
     if (win) win.focus();
   };
-  //// Se comenta codigo para futura implementacion, recordar aplicar descuento y multiplicador ////
+//// Se comenta codigo para futura implementacion, recordar aplicar descuento y multiplicador ////
   //   const handleSendEmail = (e: React.MouseEvent<HTMLButtonElement>) => {
   //     e.preventDefault();
   //     if (!validarCampos()) return;
@@ -222,7 +238,7 @@ export default function OrderForm({ order, setOrder }: Props) {
 
       <div className="flex justify-between items-center mt-4">
         <div className="text-gray-800 font-semibold text-sm">
-          Total: ${total.toLocaleString("es-AR")}
+          Total: ${total.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
         </div>
         <div className="flex gap-1 text-xs">
           <button
