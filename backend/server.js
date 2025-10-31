@@ -46,7 +46,7 @@ const Articulo = mongoose.model("Articulo", articuloSchema);
 let articulosCache = [];
 let isUpdating = false;
 
-// 📦 Función: descarga y actualiza artículos desde Okawa
+// 📦 Función: descarga y actualiza artículos desde Okawa (optimizada por lotes)
 async function actualizarArticulos() {
   if (isUpdating) {
     console.log(
@@ -96,12 +96,29 @@ async function actualizarArticulos() {
         "",
     }));
 
-    await Articulo.deleteMany({});
-    await Articulo.insertMany(nuevosArticulos);
+    console.log(
+      `🗂️ Procesando ${nuevosArticulos.length} artículos en lotes...`
+    );
+
+    // ⚡ Insertar en MongoDB en lotes de 1000
+    const batchSize = 1000;
+    await Articulo.deleteMany({}); // limpiar colección antes de insertar
+
+    for (let i = 0; i < nuevosArticulos.length; i += batchSize) {
+      const batch = nuevosArticulos.slice(i, i + batchSize);
+      await Articulo.insertMany(batch);
+      console.log(
+        `✅ Insertados ${Math.min(i + batchSize, nuevosArticulos.length)} / ${
+          nuevosArticulos.length
+        }`
+      );
+    }
+
+    // Actualizar cache local
     articulosCache = nuevosArticulos;
 
     console.log(
-      `✅ Base de datos actualizada con ${nuevosArticulos.length} artículos`
+      `🎉 Base de datos actualizada con ${nuevosArticulos.length} artículos`
     );
   } catch (err) {
     console.error("❌ Error al actualizar artículos:", err.message);
@@ -111,15 +128,38 @@ async function actualizarArticulos() {
 }
 
 // ⏰ Cron: ejecuta actualización diaria a las 3:00 AM
-cron.schedule("0 3 * * *", async () => {
-  console.log("🕒 Ejecutando actualización diaria (3 AM)...");
-  await actualizarArticulos();
-});
+// cron.schedule(
+//   "0 3 * * *",
+//   async () => {
+//     console.log("🕒 Ejecutando actualización diaria (3 AM Argentina)...");
+//     await actualizarArticulos();
+//   },
+//   {
+//     timezone: "America/Argentina/Buenos_Aires",
+//   }
+// );
+
+cron.schedule(
+  "50 9 * * *",
+  async () => {
+    console.log("🕒 Ejecutando actualización de prueba (9:50)...");
+    await actualizarArticulos();
+  },
+  {
+    timezone: "America/Argentina/Buenos_Aires",
+  }
+);
 
 // 🔍 Endpoint principal con paginación y filtros
 // 🔍 Endpoint principal con paginación y filtros
 app.get("/articulos", async (req, res) => {
-  const { page = 1, limit = 100, codigo, descripcion, disponibilidad } = req.query;
+  const {
+    page = 1,
+    limit = 100,
+    codigo,
+    descripcion,
+    disponibilidad,
+  } = req.query;
 
   try {
     let resultados = articulosCache;
@@ -208,7 +248,6 @@ app.get("/articulos", async (req, res) => {
   }
 });
 
-
 // 🏓 Endpoint de ping para mantener la app despierta
 app.get("/ping", (req, res) => {
   res.json({ ok: true });
@@ -262,7 +301,8 @@ app.get("/actualizar", async (req, res) => {
 });
 
 // 🔄 Cron interno para mantener la app despierta (ping cada 10 minutos)
-const BACKEND_URL = process.env.BACKEND_URL || "https://din-clientes.onrender.com";
+const BACKEND_URL =
+  process.env.BACKEND_URL || "https://din-clientes.onrender.com";
 
 cron.schedule("*/10 * * * *", async () => {
   try {
@@ -270,9 +310,14 @@ cron.schedule("*/10 * * * *", async () => {
     console.log(`[${new Date().toLocaleTimeString()}] 🟢 Ping enviado`);
   } catch (err) {
     if (err.response?.status !== 429) {
-      console.error(`[${new Date().toLocaleTimeString()}] 🔴 Error en ping:`, err.message);
+      console.error(
+        `[${new Date().toLocaleTimeString()}] 🔴 Error en ping:`,
+        err.message
+      );
     } else {
-      console.log(`[${new Date().toLocaleTimeString()}] ⚠️ Ping rechazado (429)`);
+      console.log(
+        `[${new Date().toLocaleTimeString()}] ⚠️ Ping rechazado (429)`
+      );
     }
   }
 });
