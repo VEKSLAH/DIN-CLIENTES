@@ -64,19 +64,22 @@ export default function OrderForm({ order, setOrder }: Props) {
     }%0A📱 *WhatsApp:* ${cliente.whatsapp}%0A✉️ *Email:* ${
       cliente.email
     }%0A%0A🧾 *Detalle del pedido:*%0A${order
-      .map(
-        (item) =>
-          `• ${item.descripcion} (${item.codigo}) x${item.cantidad} — $${(
-            item.precio * item.cantidad
-          ).toLocaleString("es-AR")}`
-      )
-      .join("%0A")}%0A%0A💰 *Total:* $${total.toLocaleString("es-AR")}`;
+      .map((item) => {
+        const precioFinal = item.precio * 0.87 * 2.2;
+        return `• ${item.descripcion} (${item.codigo}) x${item.cantidad} — $${(
+          precioFinal * item.cantidad
+        ).toLocaleString("es-AR", { minimumFractionDigits: 2 })}`;
+      })
+      .join("%0A")}%0A%0A💰 *Total:* $${(total * 0.87 * 2.2).toLocaleString(
+      "es-AR",
+      { minimumFractionDigits: 2 }
+    )}`;
 
     const url = `https://wa.me/549${numero}?text=${mensaje}`;
     const win = window.open(url, "_blank");
     if (win) win.focus();
   };
-  //// Se comenta codigo para futura implementacion ////
+  //// Se comenta codigo para futura implementacion, recordar aplicar descuento y multiplicador ////
   //   const handleSendEmail = (e: React.MouseEvent<HTMLButtonElement>) => {
   //     e.preventDefault();
   //     if (!validarCampos()) return;
@@ -191,9 +194,17 @@ export default function OrderForm({ order, setOrder }: Props) {
                       +
                     </button>
                   </td>
-                  <td className="p-2 text-right whitespace-nowrap">
+                  {/* <td className="p-2 text-right whitespace-nowrap">
                     ${(item.precio * item.cantidad).toLocaleString("es-AR")}
+                  </td> */}
+                  <td className="p-2 text-right whitespace-nowrap">
+                    $
+                    {(item.precio * 0.87 * 2.2 * item.cantidad).toLocaleString(
+                      "es-AR",
+                      { minimumFractionDigits: 2 }
+                    )}
                   </td>
+
                   <td className="p-2 text-right">
                     <button
                       onClick={() => handleRemove(item.codigo)}
