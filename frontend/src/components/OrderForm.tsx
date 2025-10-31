@@ -39,7 +39,11 @@ export default function OrderForm({ order, setOrder }: Props) {
     localStorage.removeItem("pedido");
   };
 
-  const handleSendWhatsApp = () => {
+  const handleSendWhatsApp = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    if (!cliente.nombre || order.length === 0) return;
+
     const numero = "1165512113";
     const mensaje = `*Nuevo pedido desde DIN Clientes*%0A%0A👤 *Cliente:* ${cliente.nombre}%0A📱 *WhatsApp:* ${cliente.whatsapp}%0A✉️ *Email:* ${cliente.email}%0A%0A🧾 *Detalle del pedido:*%0A${order
       .map(
@@ -50,10 +54,16 @@ export default function OrderForm({ order, setOrder }: Props) {
       )
       .join("%0A")}%0A%0A💰 *Total:* $${total.toLocaleString("es-AR")}`;
 
-    window.open(`https://wa.me/549${numero}?text=${mensaje}`, "_blank");
+    const url = `https://wa.me/549${numero}?text=${mensaje}`;
+    const win = window.open(url, "_blank");
+    if (win) win.focus();
   };
 
-  const handleSendEmail = () => {
+  const handleSendEmail = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    if (!cliente.nombre || order.length === 0) return;
+
     const destinatario = "ventas@din.com.ar";
     const asunto = `Nuevo pedido - ${cliente.nombre}`;
     const cuerpo = `Nuevo pedido desde DIN Clientes
@@ -75,18 +85,21 @@ ${order
 Total: $${total.toLocaleString("es-AR")}
 `;
 
-    window.location.href = `mailto:${destinatario}?subject=${encodeURIComponent(
+    const mailtoLink = `mailto:${destinatario}?subject=${encodeURIComponent(
       asunto
     )}&body=${encodeURIComponent(cuerpo)}`;
+
+    const a = document.createElement("a");
+    a.href = mailtoLink;
+    a.click();
   };
 
   return (
-    <div className="">
+    <div>
       <h2 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2 mb-3">
         Pedido
       </h2>
 
-      {/* Formulario del cliente */}
       <div className="grid grid-cols-3 gap-2 mb-4">
         <input
           type="text"
@@ -111,8 +124,7 @@ Total: $${total.toLocaleString("es-AR")}
         />
       </div>
 
-      {/* Lista de artículos */}
-      <div className="border border-gray-200 rounded-md overflow-hidden max-h-[240px] overflow-y-auto shadow-inner">
+      <div className="border border-gray-200 rounded-md overflow-hidden max-h-60 overflow-y-auto shadow-inner">
         {order.length === 0 ? (
           <p className="text-gray-500 text-center py-6">
             No hay artículos en el pedido.
@@ -167,7 +179,6 @@ Total: $${total.toLocaleString("es-AR")}
         )}
       </div>
 
-      {/* Total + Botones */}
       <div className="flex justify-between items-center mt-4">
         <div className="text-gray-800 font-semibold text-sm">
           Total: ${total.toLocaleString("es-AR")}
@@ -189,8 +200,7 @@ Total: $${total.toLocaleString("es-AR")}
           </button>
           <button
             onClick={handleClear}
-            // className="text-gray-500 hover:text-red-500 underline"
-             className="border-2 border-red-600 hover:border-red-500 text-red-500 px-3 py-1 rounded-md hover:bg-red-500 hover:text-white transition duration-300"
+            className="border-2 border-red-600 hover:border-red-500 text-red-500 px-3 py-1 rounded-md hover:bg-red-500 hover:text-white transition duration-300"
           >
             Vaciar
           </button>
