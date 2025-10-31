@@ -279,8 +279,14 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
                         descripcion
                       )}
                     </td>
+                    {/* Valor de lista real, segun lista descargada. */}
+                    {/* <td className="p-2 text-gray-800 font-semibold"> ${art.precio.toLocaleString("es-AR")} </td> */}
+                    {/* Valor de lista con descuento del 13% y multiplicado por 2.2 */}
                     <td className="p-2 text-gray-800 font-semibold">
-                      ${art.precio.toLocaleString("es-AR")}
+                      $
+                      {(art.precio * 0.87 * 2.2).toLocaleString("es-AR", {
+                        minimumFractionDigits: 2,
+                      })}
                     </td>
                     <td className="p-2 text-gray-600">{art.rubro}</td>
                     <td className="p-2 text-gray-600">{art.marca}</td>
