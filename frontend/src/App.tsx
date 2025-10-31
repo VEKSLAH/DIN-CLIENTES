@@ -1,21 +1,12 @@
-import Articulos from "./components/Articulos";
+import ArticulosWithOrderForm from "./components/ArticulosWithOrderForm";
 import Card from "./components/Card";
 import Logo from "./assets/Logo-din.jpg";
 
 export default function App() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f3f4f6",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "flex-start",
-        padding: "24px",
-      }}
-    >
-      <Card logoSrc={Logo} title="Listado de Artículos">
-        <Articulos />
+    <div className="min-h-screen  flex justify-center items-start py-6 px-3 sm:px-6">
+      <Card logoSrc={Logo} title="Distribuidora Integral Neuquén">
+        <ArticulosWithOrderForm />
       </Card>
     </div>
   );

@@ -26,7 +26,7 @@ const stockColor: Record<StockValue, string> = {
 const stockText: Record<StockValue, string> = {
   S: "Disponible",
   N: "No disponible",
-  C: "Consultar",
+  C: "Consultar disponibilidad",
 };
 
 function highlight(text: string, query: string) {
@@ -82,6 +82,7 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
+  // 🚀 Cargar artículos
   const fetchArticulos = async (opts?: {
     codigo?: string;
     descripcion?: string;
@@ -118,7 +119,7 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
       setArticulos(data.articulos || []);
       setTotal(data.total || 0);
       setValue("pagina", data.page ?? opts?.pagina ?? 1);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error("❌ Error en fetchArticulos:", err);
       setError(err?.message || "Error desconocido");
@@ -134,6 +135,7 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
     fetchArticulos({ pagina: 1 });
   }, []);
 
+  // 🕒 Debounce búsqueda
   const handleInputChange = (
     field: "codigo" | "descripcion" | "disponibilidad",
     value: string
@@ -153,12 +155,14 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
     }, 300);
   };
 
+  // ➕ Agregar artículo
   const handleAdd = (art: Articulo) => {
     onAddToOrder(art);
     setAdded(art.codigo);
     setTimeout(() => setAdded(null), 1000);
   };
 
+  // 🔀 Paginación
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
     setValue("pagina", newPage);
@@ -178,24 +182,24 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
 
   return (
     <div className="p-4">
-      {/* Filtros */}
+      {/* 🔍 Filtros */}
       <div className="flex flex-wrap gap-3 mb-4">
         <input
           {...register("codigo")}
-          placeholder="Código"
+          placeholder="Buscar por código"
           onChange={(e) => handleInputChange("codigo", e.target.value)}
-          className="border px-2 py-1 rounded text-sm"
+          className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 focus:outline-none"
         />
         <input
           {...register("descripcion")}
-          placeholder="Descripción"
+          placeholder="Buscar por descripción"
           onChange={(e) => handleInputChange("descripcion", e.target.value)}
-          className="border px-2 py-1 rounded text-sm w-60"
+          className="flex-2 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 focus:outline-none"
         />
         <select
           {...register("disponibilidad")}
           onChange={(e) => handleInputChange("disponibilidad", e.target.value)}
-          className="border px-2 py-1 rounded text-sm"
+          className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 focus:outline-none appearance-none pr-8"
         >
           <option value="">Todas</option>
           <option value="S">🟢 Disponible</option>
@@ -204,12 +208,13 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
         </select>
       </div>
 
+      {/* ⚠️ Error */}
       {error && <p className="text-red-600 text-center">Error: {error}</p>}
 
-      {/* Tabla */}
+      {/* 🧩 Tabla */}
       <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-inner max-h-[65vh] overflow-y-auto custom-scroll">
         <table className="w-full min-w-[800px] text-xs">
-          <thead className="bg-gray-200 sticky top-0 z-10">
+          <thead className="sticky top-0 bg-red-600 text-white text-left shadow-sm z-10">
             <tr>
               {[
                 "Código",
@@ -219,9 +224,9 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
                 "Marca",
                 "Stock",
                 "Equivalencia",
-                "Acción",
+                "Agregar",
               ].map((header) => (
-                <th key={header} className="p-2 font-semibold text-left">
+                <th key={header} className="p-2 font-semibold">
                   {header}
                 </th>
               ))}
@@ -250,46 +255,45 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
                       idx % 2 === 0 ? "bg-gray-50" : "bg-white"
                     } hover:bg-red-50`}
                   >
-                    <td className="p-2">{art.codigo}</td>
-                    <td className="p-2">
-                      {highlight(art.descripcion, descripcion)}
+                    <td className="p-2 font-medium text-gray-800">
+                      {highlight(art.codigo, codigo)}
                     </td>
-                    <td className="p-2 text-right">
-                      ${art.precio.toLocaleString("es-AR")}
-                    </td>
-                    <td className="p-2">{art.rubro}</td>
-                    <td className="p-2">{art.marca}</td>
-                    <td className="p-2 text-center">
-                      {art.stock && (
-                        <span
-                          className={`text-white text-xs px-2 py-1 rounded ${
-                            stockColor[art.stock]
-                          }`}
-                        >
-                          {stockText[art.stock]}
-                        </span>
+                    <td className="p-2 text-gray-700">
+                      {highlight(
+                        art.descripcion || "Sin descripción",
+                        descripcion
                       )}
                     </td>
-                    <td className="p-2">{art.equivalente}</td>
+                    <td className="p-2 text-gray-800 font-semibold">
+                      ${art.precio.toLocaleString("es-AR")}
+                    </td>
+                    <td className="p-2 text-gray-600">{art.rubro}</td>
+                    <td className="p-2 text-gray-600">{art.marca}</td>
+                    <td className="p-2 text-center">
+                      {art.stock ? (
+                        <div
+                          className={`h-4 w-4 rounded-full inline-block ${
+                            stockColor[art.stock]
+                          }`}
+                          title={stockText[art.stock]}
+                        />
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="p-2 text-gray-600">{art.equivalente}</td>
                     <td className="p-2 text-center">
                       <button
                         onClick={() => handleAdd(art)}
-                        className={`w-20 h-7 rounded-md text-xs text-white flex items-center justify-center transition-colors`}
-                        style={{
-                          backgroundColor:
-                            added === art.codigo ? "#22c55e" : "#ef4444",
-                        }}
+                        className={`w-8 h-8 rounded-md text-white flex items-center justify-center transition-all duration-200 
+      ${
+        added === art.codigo
+          ? "bg-green-500 hover:bg-green-600 scale-105"
+          : "bg-red-500 hover:bg-red-600 scale-105"
+      }
+    `}
                       >
-                        <span className="w-3 h-3 mr-1 shrink-0 text-center">
-                          <span
-                            style={{ opacity: added === art.codigo ? 1 : 0 }}
-                          >
-                            ✔
-                          </span>
-                        </span>
-                        <span className="text-center flex-1">
-                          {added === art.codigo ? "Agregado" : "Agregar"}
-                        </span>
+                        {added === art.codigo ? "✔" : "+"}
                       </button>
                     </td>
                   </tr>
@@ -300,38 +304,46 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
         </table>
       </div>
 
-      {/* Paginación */}
-      <div className="flex justify-center items-center gap-3 mt-4 text-sm">
+      {/* 🔢 Paginación */}
+      <div className="flex flex-wrap items-center justify-center gap-3 mt-5 text-sm">
         <button
           onClick={() => handlePageChange(pagina - 1)}
           disabled={pagina <= 1}
-          className="px-2 py-1 border rounded disabled:opacity-50"
+          className="bg-red-500 text-white px-3 py-1.5 rounded-md disabled:opacity-50 hover:bg-red-600 transition"
         >
-          ◀
+          Anterior
         </button>
-        <span>
+
+        <span className="text-gray-700 font-medium">
           Página {pagina} de {totalPages}
         </span>
+
         <button
           onClick={() => handlePageChange(pagina + 1)}
           disabled={pagina >= totalPages}
-          className="px-2 py-1 border rounded disabled:opacity-50"
+          className="bg-red-500 text-white px-3 py-1.5 rounded-md disabled:opacity-50 hover:bg-red-600 transition"
         >
-          ▶
+          Siguiente
         </button>
-        <input
-          type="number"
-          value={goPageInput}
-          onChange={(e) => setGoPageInput(e.target.value)}
-          placeholder="Ir a..."
-          className="border px-2 py-1 w-16 rounded text-center"
-        />
-        <button
-          onClick={handleGoPage}
-          className="px-3 py-1 bg-red-500 text-white rounded"
-        >
-          Ir
-        </button>
+
+        <div className="flex items-center gap-2 ml-2">
+          <input
+            type="number"
+            value={goPageInput}
+            onChange={(e) => setGoPageInput(e.target.value)}
+            placeholder="Ir a..."
+            className="border border-gray-300 rounded-md px-2 py-1 w-20 focus:ring-2 focus:ring-red-400 focus:outline-none"
+            min={1}
+            max={totalPages}
+          />
+          <button
+            onClick={handleGoPage}
+            disabled={!goPageInput}
+            className="bg-red-500 text-white px-3 py-1.5 rounded-md hover:bg-red-600 transition disabled:opacity-50"
+          >
+            Ir
+          </button>
+        </div>
       </div>
     </div>
   );
