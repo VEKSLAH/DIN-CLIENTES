@@ -48,7 +48,7 @@ export default function ServerStatus() {
     status.source === "Okawa" ? "bg-green-500" : "bg-red-500";
 
   return (
-    <div className="flex flex-col justify-start items-start text-xs text-white transition duration-300 rounded-xl py-2 px-3 shadow-sm group hover:bg-white/10 hover:text-black">
+    <div className="flex flex-col justify-start items-start text-xs text-white transition duration-300 rounded-xl py-2 px-3 group hover:bg-white/10 hover:text-black">
       <p className="mt-1">
         <strong>Última actualización:</strong>{" "}
         {status.lastUpdate
