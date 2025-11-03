@@ -31,7 +31,7 @@ export default function ServerStatus() {
 
   if (!status)
     return (
-      <p className="text-xs text-gray-400 text-center mt-3">
+      <p className="hidden hover:flex text-xs text-gray-400 text-center mt-3">
         Cargando estado del servidor...
       </p>
     );
@@ -41,23 +41,25 @@ export default function ServerStatus() {
     status.source === "Render" ? "bg-green-500" : "bg-amber-500";
 
   return (
-    <div className="mt-4 text-sm text-red-700 text-center bg-red-600/10 rounded-xl py-2 px-3 shadow-sm">
-      <div className="flex items-center justify-center gap-2">
-        <span className={`w-2.5 h-2.5 rounded-full ${indicatorColor}`}></span>
+    <div className="flex flex-col justify-start items-start text-xs text-white transition duration-300 rounded-xl py-2 px-3 shadow-sm group hover:bg-white/10 hover:text-black">
+      <div className="flex items-center justify-center gap-2 relative w-full">
         <p>
-          🗂️ <strong>Fuente:</strong> {status.source}
+          <strong>Fuente:</strong> {status.source || "No disponible"}
         </p>
+        <div
+          className={`w-2.5 h-2.5 rounded-full ${indicatorColor} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+        ></div>
       </div>
 
       <p className="mt-1">
-        ⏰ <strong>Última actualización:</strong>{" "}
+        <strong>Última actualización:</strong>{" "}
         {status.lastUpdate
           ? new Date(status.lastUpdate).toLocaleString("es-AR")
           : "N/D"}
       </p>
 
       <p>
-        📦 <strong>Artículos:</strong> {status.totalArticulos ?? "—"}
+        <strong>Artículos:</strong> {status.totalArticulos ?? "—"}
       </p>
     </div>
   );
