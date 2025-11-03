@@ -1,6 +1,7 @@
 import ArticulosWithOrderForm from "./components/ArticulosWithOrderForm";
 import Card from "./components/Card";
 import Logo from "./assets/Logo-din.jpg";
+import ServerStatus from "./components/ServerStatus";
 
 export default function App() {
   return (
@@ -8,6 +9,7 @@ export default function App() {
       <Card logoSrc={Logo} title="Distribuidora Integral Neuquén">
         <ArticulosWithOrderForm />
       </Card>
+        <ServerStatus />
     </div>
   );
 }
