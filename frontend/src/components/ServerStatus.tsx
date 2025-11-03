@@ -14,7 +14,6 @@ export default function ServerStatus() {
         const res = await fetch("https://din-clientes.onrender.com/status");
         const data = await res.json();
 
-        // Adaptamos los nombres de las claves que vienen del backend
         setStatus({
           source: data.fuente,
           lastUpdate: data.ultima_actualizacion,
@@ -45,21 +44,11 @@ export default function ServerStatus() {
       </p>
     );
 
-  // Determinar color del indicador según la fuente
   const indicatorColor =
-    status.source === "Render" ? "bg-green-500" : "bg-amber-500";
+    status.source === "Okawa" ? "bg-green-500" : "bg-red-500";
 
   return (
     <div className="flex flex-col justify-start items-start text-xs text-white transition duration-300 rounded-xl py-2 px-3 shadow-sm group hover:bg-white/10 hover:text-black">
-      <div className="flex items-center justify-center gap-2 relative w-full">
-        <p>
-          <strong>Fuente:</strong> {status.source || "Sin datos"}
-        </p>
-        <div
-          className={`w-2.5 h-2.5 rounded-full ${indicatorColor} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
-        ></div>
-      </div>
-
       <p className="mt-1">
         <strong>Última actualización:</strong>{" "}
         {status.lastUpdate
@@ -70,6 +59,14 @@ export default function ServerStatus() {
       <p>
         <strong>Artículos:</strong> {status.totalArticulos ?? "—"}
       </p>
+      <div className="flex items-center justify-start gap-2 w-full">
+        <p className="opacity-60 text-[11px]">
+          Estado del servidor actualizado
+        </p>
+        <div
+          className={`w-2.5 h-2.5 rounded-full ${indicatorColor} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+        ></div>
+      </div>
     </div>
   );
 }
