@@ -13,7 +13,16 @@ export default function ServerStatus() {
       try {
         const res = await fetch("https://din-clientes.onrender.com/status");
         const data = await res.json();
-        setStatus(data);
+
+        // Adaptamos los nombres de las claves que vienen del backend
+        setStatus({
+          source: data.fuente,
+          lastUpdate: data.ultima_actualizacion,
+          totalArticulos:
+            typeof data.detalles === "string"
+              ? parseInt(data.detalles.match(/\d+/)?.[0] || "0")
+              : undefined,
+        });
       } catch (err) {
         setError("Error al obtener estado del servidor");
       }
@@ -44,7 +53,7 @@ export default function ServerStatus() {
     <div className="flex flex-col justify-start items-start text-xs text-white transition duration-300 rounded-xl py-2 px-3 shadow-sm group hover:bg-white/10 hover:text-black">
       <div className="flex items-center justify-center gap-2 relative w-full">
         <p>
-          <strong>Fuente:</strong> {status.source || "No disponible"}
+          <strong>Fuente:</strong> {status.source || "Sin datos"}
         </p>
         <div
           className={`w-2.5 h-2.5 rounded-full ${indicatorColor} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
