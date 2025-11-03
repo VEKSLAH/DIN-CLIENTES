@@ -4,7 +4,7 @@ const DevelopedBy = () => {
   return (
     <div className="flex items-center gap-2 text-sm text-black/70">
       <a
-        href="https://vekslah.com/"
+        href="https://vekslah.com/homes/personal"
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center gap-2 hover:text-black transition-colors duration-300"
