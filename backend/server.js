@@ -182,6 +182,8 @@ app.get("/articulos", async (req, res) => {
     codigo,
     descripcion,
     disponibilidad,
+    rubro,
+    lista,
   } = req.query;
 
   try {
@@ -196,6 +198,7 @@ app.get("/articulos", async (req, res) => {
     }
 
     let filtrados = resultados;
+
     // 🔎 Filtro por código
     if (codigo) {
       const codigoStr = String(codigo).toUpperCase();
@@ -204,6 +207,7 @@ app.get("/articulos", async (req, res) => {
       );
     }
 
+    // 🔎 Filtro por descripción
     if (descripcion) {
       const descStr = String(descripcion).toUpperCase();
       filtrados = filtrados.filter((a) =>
@@ -211,6 +215,7 @@ app.get("/articulos", async (req, res) => {
       );
     }
 
+    // 🔎 Filtro por disponibilidad
     if (disponibilidad) {
       const d = disponibilidad.toUpperCase();
       filtrados = filtrados.filter((a) => {
@@ -239,6 +244,23 @@ app.get("/articulos", async (req, res) => {
       });
     }
 
+    // 🔎 Filtro por rubro
+    if (rubro) {
+      const rubroStr = String(rubro).toUpperCase().trim();
+      filtrados = filtrados.filter((a) =>
+        a.rubro?.toUpperCase().includes(rubroStr)
+      );
+    }
+
+    // 🚗 Filtro por marca de vehículo (lista)
+    if (lista) {
+      const listaStr = String(lista).toUpperCase().trim();
+      filtrados = filtrados.filter((a) =>
+        a.lista?.toUpperCase().includes(listaStr)
+      );
+    }
+
+    // 🔢 Paginación
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
     const start = (pageNum - 1) * limitNum;
@@ -256,6 +278,55 @@ app.get("/articulos", async (req, res) => {
     res.status(500).json({ ok: false, error: "Error interno del servidor" });
   }
 });
+
+
+// 🧾 Endpoint: obtener rubros únicos (normalizados)
+app.get("/rubros", async (req, res) => {
+  try {
+    let rubros = await Articulo.distinct("rubro", { rubro: { $ne: "" } });
+
+    rubros = rubros
+      .map((r) =>
+        r
+          ? r.trim().toLowerCase().replace(/\s+/g, " ")
+          : ""
+      )
+      .filter((r) => r !== "")
+      .map((r) => r.charAt(0).toUpperCase() + r.slice(1));
+
+    const unicos = [...new Set(rubros)].sort();
+
+    res.json({ ok: true, rubros: unicos });
+  } catch (err) {
+    console.error("❌ Error en /rubros:", err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+
+// 🚗 Endpoint: obtener marcas de vehículo (listas) únicas (normalizadas)
+app.get("/listas", async (req, res) => {
+  try {
+    let listas = await Articulo.distinct("lista", { lista: { $ne: "" } });
+
+    listas = listas
+      .map((l) =>
+        l
+          ? l.trim().toLowerCase().replace(/\s+/g, " ")
+          : ""
+      )
+      .filter((l) => l !== "")
+      .map((l) => l.charAt(0).toUpperCase() + l.slice(1));
+
+    const unicas = [...new Set(listas)].sort();
+
+    res.json({ ok: true, listas: unicas });
+  } catch (err) {
+    console.error("❌ Error en /listas:", err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 
 // 🧾 Endpoint de estado
 app.get("/status", async (req, res) => {
