@@ -88,10 +88,11 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
   const [loadingFilters, setLoadingFilters] = useState(true);
 
   const limit = 100;
-  //  const API_URL =
-  //   import.meta.env.VITE_API_URL || "http://localhost:3000/articulos";
 
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const API_BASE = (() => {
+    const url = import.meta.env.VITE_API_URL || "http://localhost:3000";
+    return url.replace(/\/$/, "");
+  })();
 
   const API_URL = `${API_BASE}/articulos`;
   const RUBROS_URL = `${API_BASE}/rubros`;
