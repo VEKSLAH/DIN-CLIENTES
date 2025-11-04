@@ -385,23 +385,80 @@ app.get("/actualizar", async (req, res) => {
   }
 });
 
-// 🔄 Cron para mantener la app activa (ping cada 7 min)
-const BACKEND_URL =
-  process.env.BACKEND_URL || "https://din-clientes.onrender.com";
-cron.schedule("*/7 * * * *", async () => {
+// 🔄 Keep-Alive y Failsafe
+const BASE_URL = process.env.BACKEND_URL || "https://din-clientes.onrender.com";
+const SERVICE_ID = process.env.RENDER_SERVICE_ID;
+const API_KEY = process.env.RENDER_API_KEY;
+
+cron.schedule("*/2 * * * *", async () => {
   try {
-    await axios.get(`${BACKEND_URL}/ping`);
-    console.log(`[${new Date().toLocaleTimeString()}] 🟢 Ping enviado`);
-  } catch (err) {
-    if (err.response?.status !== 429) {
-      console.error(
-        `[${new Date().toLocaleTimeString()}] 🔴 Error en ping:`,
-        err.message
+    const res = await axios.get(`${BASE_URL}/articulos?limit=1`, {
+      timeout: 10000,
+    });
+    console.log(`[${new Date().toLocaleTimeString()}] 🟢 Keep-alive OK (${res.status})`);
+  } catch (error) {
+    console.error(`[${new Date().toLocaleTimeString()}] 🔴 Keep-alive error:`, error.message);
+  }
+});
+
+cron.schedule("0 * * * *", async () => {
+  console.log("🧩 Comprobando estado de servicio...");
+
+  try {
+    await axios.get(`${BASE_URL}/articulos?limit=1`, { timeout: 10000 });
+    console.log("✅ Servicio responde correctamente.");
+  } catch (error) {
+    console.error("🚨 Servicio no responde. Intentando reiniciar vía API Render...");
+
+    if (!SERVICE_ID || !API_KEY) {
+      console.error("⚠️ Falta RENDER_SERVICE_ID o RENDER_API_KEY en .env");
+      return;
+    }
+
+    try {
+      const restartUrl = `https://api.render.com/v1/services/${SERVICE_ID}/deploys`;
+      await axios.post(
+        restartUrl,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
-    } else {
-      console.log(
-        `[${new Date().toLocaleTimeString()}] ⚠️ Ping rechazado (429)`
-      );
+      console.log("✅ Reinicio solicitado exitosamente a Render.");
+    } catch (apiError) {
+      console.error("❌ Error al solicitar reinicio:", apiError.message);
     }
   }
 });
+
+cron.schedule("*/3 * * * *", async () => {
+  try {
+    await axios.get(`${BASE_URL}/articulos?limit=1`);
+    console.log(`[${new Date().toLocaleTimeString()}] 🟩 Ping externo enviado`);
+  } catch (err) {
+    console.error(`[${new Date().toLocaleTimeString()}] 🔻 Error ping externo:`, err.message);
+  }
+});
+
+// const BACKEND_URL =
+//   process.env.BACKEND_URL || "https://din-clientes.onrender.com";
+// cron.schedule("*/7 * * * *", async () => {
+//   try {
+//     await axios.get(`${BACKEND_URL}/ping`);
+//     console.log(`[${new Date().toLocaleTimeString()}] 🟢 Ping enviado`);
+//   } catch (err) {
+//     if (err.response?.status !== 429) {
+//       console.error(
+//         `[${new Date().toLocaleTimeString()}] 🔴 Error en ping:`,
+//         err.message
+//       );
+//     } else {
+//       console.log(
+//         `[${new Date().toLocaleTimeString()}] ⚠️ Ping rechazado (429)`
+//       );
+//     }
+//   }
+// });
