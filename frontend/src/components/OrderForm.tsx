@@ -18,10 +18,14 @@ export default function OrderForm({ order, setOrder }: Props) {
   const [mensajeError, setMensajeError] = useState("");
 
   // Total con factor aplicado
-  const total = order.reduce(
-    (acc, item) => acc + item.precio * 0.87 * 2.2 * item.cantidad,
-    0
-  );
+  const total = order.reduce((acc, item) => {
+    const factor =
+      item.marca && item.marca !== "APEDIDO"
+        ? 0.87 * 0.6 * 2.2
+        : 0.87 * 2.2;
+
+    return acc + item.precio * factor * item.cantidad;
+  }, 0);
 
   // Agregar artículo sumando cantidad si ya existe
   // const handleAddItem = (nuevoItem: OrderItem) => {
@@ -82,20 +86,28 @@ export default function OrderForm({ order, setOrder }: Props) {
       cliente.email
     }%0A%0A🧾 *Detalle del pedido:*%0A${order
       .map((item) => {
-        const precioFinal = item.precio * 0.87 * 2.2;
+        const precioFinal =
+          item.marca && item.marca !== "APEDIDO"
+            ? item.precio * 0.87 * 0.6 * 2.2
+            : item.precio * 0.87 * 2.2;
+
         return `• ${item.descripcion} (${item.codigo}) x${item.cantidad} — $${(
           precioFinal * item.cantidad
-        ).toLocaleString("es-AR", { minimumFractionDigits: 2 })}`;
+        ).toLocaleString("es-AR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`;
       })
       .join("%0A")}%0A%0A💰 *Total:* $${total.toLocaleString("es-AR", {
       minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     })}`;
 
     const url = `https://wa.me/549${numero}?text=${mensaje}`;
     const win = window.open(url, "_blank");
     if (win) win.focus();
   };
-//// Se comenta codigo para futura implementacion, recordar aplicar descuento y multiplicador ////
+  //// Se comenta codigo para futura implementacion, recordar aplicar descuento y multiplicador ////
   //   const handleSendEmail = (e: React.MouseEvent<HTMLButtonElement>) => {
   //     e.preventDefault();
   //     if (!validarCampos()) return;
@@ -210,17 +222,18 @@ export default function OrderForm({ order, setOrder }: Props) {
                       +
                     </button>
                   </td>
-                  {/* <td className="p-2 text-right whitespace-nowrap">
-                    ${(item.precio * item.cantidad).toLocaleString("es-AR")}
-                  </td> */}
                   <td className="p-2 text-right whitespace-nowrap">
                     $
-                    {(item.precio * 0.87 * 2.2 * item.cantidad).toLocaleString(
-                      "es-AR",
-                      { minimumFractionDigits: 2 }
-                    )}
+                    {(
+                      (item.marca && item.marca !== "APEDIDO"
+                        ? item.precio * 0.87 * 0.6 * 2.2
+                        : item.precio * 0.87 * 2.2) *
+                      item.cantidad
+                    ).toLocaleString("es-AR", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </td>
-
                   <td className="p-2 text-right">
                     <button
                       onClick={() => handleRemove(item.codigo)}
@@ -237,9 +250,19 @@ export default function OrderForm({ order, setOrder }: Props) {
       </div>
 
       <div className="flex justify-between items-center mt-4">
-        <div className="text-gray-800 font-semibold text-sm">
-          Total: ${total.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
+        <div className="text-gray-800 font-semibold text-sm flex flex-col sm:flex-row sm:items-baseline gap-1">
+          <span>
+            Total: $
+            {total.toLocaleString("es-AR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </span>
+          <span className="text-gray-500 text-xs sm:ml-2">
+            (Los precios no incluyen IVA)
+          </span>
         </div>
+
         <div className="flex gap-1 text-xs">
           <button
             onClick={handleSendWhatsApp}
@@ -247,16 +270,17 @@ export default function OrderForm({ order, setOrder }: Props) {
           >
             Enviar por WhatsApp
           </button>
-          {/* Se comementa boton para implementacion futura */}
 
-          {/* <button
-            onClick={handleSendEmail}
-            className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition"
-          >
-            Enviar por Email
-          </button> */}
+          {/* Se comenta botón para implementación futura */}
+          {/* 
+    <button
+      onClick={handleSendEmail}
+      className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition"
+    >
+      Enviar por Email
+    </button> 
+    */}
 
-          {/* Se comementa boton para implementacion futura */}
           <button
             onClick={handleClear}
             className="border-2 border-red-600 hover:border-red-500 text-red-500 px-3 py-1 rounded-md hover:bg-red-500 hover:text-white transition duration-300"

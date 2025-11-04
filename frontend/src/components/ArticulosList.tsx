@@ -363,9 +363,20 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
                       </td>
                       <td className="p-2 text-gray-800 font-semibold">
                         $
-                        {(art.precio * 0.87 * 2.2).toLocaleString("es-AR", {
-                          minimumFractionDigits: 2,
-                        })}
+                        {art.marca && art.marca !== "APEDIDO"
+                          ? // &&
+                            // (art.stock === "S" || art.stock === "C")
+                            (art.precio * 0.87 * 0.6 * 2.2).toLocaleString(
+                              "es-AR",
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )
+                          : (art.precio * 0.87 * 2.2).toLocaleString("es-AR", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                       </td>
                       <td className="p-2 text-gray-600">{art.rubro}</td>
                       <td className="p-2 text-gray-600">{art.marca}</td>
