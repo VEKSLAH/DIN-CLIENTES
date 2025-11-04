@@ -75,7 +75,7 @@ export default function OrderForm({ order, setOrder }: Props) {
     e.preventDefault();
     if (!validarCampos()) return;
 
-    const numero = "1165512113";
+    const numero = "2994608210";
     const mensaje = `*Nuevo pedido desde DIN Clientes*%0A%0A👤 *Cliente:* ${
       cliente.nombre
     }%0A📱 *WhatsApp:* ${cliente.whatsapp}%0A✉️ *Email:* ${
