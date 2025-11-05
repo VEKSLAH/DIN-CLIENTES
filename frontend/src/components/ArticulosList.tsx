@@ -113,6 +113,7 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
   const pagina = watch("pagina");
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  const controllerRef = useRef<AbortController | null>(null);
 
   // 🚀 Cargar artículos
   const fetchArticulos = async (opts?: {
@@ -123,6 +124,14 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
     lista?: string;
     pagina?: number;
   }) => {
+    // 🚫 Cancela la request anterior si sigue activa
+    if (controllerRef.current) {
+      controllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    controllerRef.current = controller;
+
     if (inflightRef.current) return;
     inflightRef.current = true;
     setIsTransitioning(true);
@@ -148,7 +157,9 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
         if (val) params.append(field, val as string);
       });
 
-      const res = await fetch(`${API_URL}?${params}`);
+      const res = await fetch(`${API_URL}?${params}`, {
+        signal: controller.signal,
+      });
       if (!res.ok) throw new Error("Error al cargar los artículos");
 
       const data = await res.json();
@@ -157,8 +168,8 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
       setArticulos(data.articulos || []);
       setTotal(data.total || 0);
       setValue("pagina", data.page ?? opts?.pagina ?? 1);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
+      if (err.name === "AbortError") return;
       console.error("❌ Error en fetchArticulos:", err);
       setError(err?.message || "Error desconocido");
       setArticulos([]);
