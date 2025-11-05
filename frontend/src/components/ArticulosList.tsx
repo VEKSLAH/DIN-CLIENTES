@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
+import AutoIndustrySpinner from "./icons/AutoIndustrySpinner";
 
 export interface Articulo {
   codigo: string;
@@ -92,7 +94,7 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
   const [loadingFilters, setLoadingFilters] = useState(true);
 
   const limit = 100;
-  
+
   //// DEV: const API_BASE = "http://localhost:3000";
 
   const API_BASE = (() => {
@@ -308,7 +310,7 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
       </div>
 
       {/* 🌀 Loader de búsqueda */}
-      {isTransitioning && (
+      {/* {!isTransitioning && (
         <div className="flex items-center gap-2 text-gray-500 text-sm animate-pulse mb-3">
           <svg
             className="w-4 h-4 animate-spin text-gray-400"
@@ -332,7 +334,7 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
           </svg>
           Buscando artículos...
         </div>
-      )}
+      )} */}
 
       <div>
         {/* ⚠️ Error */}
@@ -369,9 +371,44 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                {articulos.length === 0 ? (
+                {!isTransitioning ? (
                   <tr>
-                    <td colSpan={9} className="text-center py-6 text-gray-500">
+                    <td
+                      colSpan={9}
+                      className="text-center py-6 h-[60vh] text-gray-500"
+                    >
+                      <div className="flex flex-col items-center justify-center gap-2 text-gray-500 text-sm">
+                        {/* <svg
+                          className="w-5 h-5 animate-spin text-gray-400"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                          ></path>
+                        </svg> */}
+                        <AutoIndustrySpinner classNames="w-20 h-20 drop-shadow-2xl" />
+                       <div className="animate-pulse">Buscando artículos...</div> 
+                      </div>
+                    </td>
+                  </tr>
+                ) : articulos.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={9}
+                      className="text-center h-[60vh] py-6 text-gray-500"
+                    >
                       No se encontraron artículos
                     </td>
                   </tr>
@@ -387,12 +424,11 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
                         <button
                           onClick={() => handleAdd(art)}
                           className={`w-8 h-8 rounded-md text-white flex items-center justify-center transition-all duration-200 
-                     ${
-                       added === art.codigo
-                         ? "bg-green-500 hover:bg-green-600 scale-105"
-                         : "bg-red-500 hover:bg-red-600 scale-105"
-                     }
-                         `}
+                ${
+                  added === art.codigo
+                    ? "bg-green-500 hover:bg-green-600 scale-105"
+                    : "bg-red-500 hover:bg-red-600 scale-105"
+                }`}
                         >
                           {added === art.codigo ? "✔" : "+"}
                         </button>
@@ -409,9 +445,7 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
                       <td className="p-2 text-gray-800 font-semibold">
                         $
                         {art.marca && art.marca !== "APEDIDO"
-                          ? // &&
-                            // (art.stock === "S" || art.stock === "C")
-                            (art.precio * 0.87 * 0.6 * 2.2).toLocaleString(
+                          ? (art.precio * 0.87 * 0.6 * 2.2).toLocaleString(
                               "es-AR",
                               {
                                 minimumFractionDigits: 2,
