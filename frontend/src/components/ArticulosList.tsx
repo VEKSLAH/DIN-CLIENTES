@@ -371,7 +371,7 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                {!isTransitioning ? (
+                {isTransitioning ? (
                   <tr>
                     <td
                       colSpan={9}
