@@ -43,12 +43,16 @@ const stockText: Record<StockValue, string> = {
   C: "Consultar disponibilidad",
 };
 
-function highlight(text: string, query: string) {
+const highlight = (text: string, query: string) => {
   if (!query) return text;
-  const regex = new RegExp(`(${query})`, "gi");
-  const parts = text.split(regex);
-  return parts.map((part, i) =>
-    part.toLowerCase() === query.toLowerCase() ? (
+
+  const palabras = query.trim().split(/\s+/).filter(Boolean);
+  if (palabras.length === 0) return text;
+
+  const regex = new RegExp(`(${palabras.join("|")})`, "gi");
+
+  return text.split(regex).map((part, i) =>
+    palabras.some((palabra) => part.toLowerCase() === palabra.toLowerCase()) ? (
       <span
         key={`${part}-${i}`}
         className="bg-red-100 text-red-600 font-semibold rounded-sm px-0.5"
@@ -59,7 +63,7 @@ function highlight(text: string, query: string) {
       <span key={`${part}-${i}`}>{part}</span>
     )
   );
-}
+};
 
 interface ArticulosListProps {
   onAddToOrder: (articulo: Articulo) => void;
@@ -254,7 +258,7 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
           {...register("rubro")}
           disabled={loadingFilters}
           onChange={(e) => handleInputChange("rubro", e.target.value)}
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 focus:outline-none appearance-none pr-8 min-w-[160px]"
+          className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 focus:outline-none appearance-none pr-8 min-w-40"
         >
           <option value="">Todos los rubros</option>
           {rubros.map((r) => (
@@ -269,7 +273,7 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
           {...register("lista")}
           disabled={loadingFilters}
           onChange={(e) => handleInputChange("lista", e.target.value)}
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 focus:outline-none appearance-none pr-8 min-w-[160px]"
+          className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 focus:outline-none appearance-none pr-8 min-w-40"
         >
           <option value="">Todas las marcas vehículo</option>
           {listas.map((l) => (

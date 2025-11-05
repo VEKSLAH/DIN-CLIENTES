@@ -212,16 +212,9 @@ app.get("/articulos", async (req, res) => {
       const palabras = descripcion.toUpperCase().split(/\s+/).filter(Boolean);
       filtrados = filtrados.filter((a) => {
         const desc = a.descripcion?.toUpperCase() || "";
-        return palabras.some((palabra) => desc.includes(palabra));
+        return palabras.every((palabra) => desc.includes(palabra));
       });
     }
-
-    // if (descripcion) {
-    //   const descStr = String(descripcion).toUpperCase();
-    //   filtrados = filtrados.filter((a) =>
-    //     a.descripcion?.toUpperCase().includes(descStr)
-    //   );
-    // }
 
     // 🔎 Filtro por disponibilidad
     if (disponibilidad) {
