@@ -207,13 +207,21 @@ app.get("/articulos", async (req, res) => {
       );
     }
 
-    // 🔎 Filtro por descripción
+    // 🔎 Filtro por descripción(de acuerdo a coincidencias parciales)
     if (descripcion) {
-      const descStr = String(descripcion).toUpperCase();
-      filtrados = filtrados.filter((a) =>
-        a.descripcion?.toUpperCase().includes(descStr)
-      );
+      const palabras = descripcion.toUpperCase().split(/\s+/).filter(Boolean);
+      filtrados = filtrados.filter((a) => {
+        const desc = a.descripcion?.toUpperCase() || "";
+        return palabras.some((palabra) => desc.includes(palabra));
+      });
     }
+
+    // if (descripcion) {
+    //   const descStr = String(descripcion).toUpperCase();
+    //   filtrados = filtrados.filter((a) =>
+    //     a.descripcion?.toUpperCase().includes(descStr)
+    //   );
+    // }
 
     // 🔎 Filtro por disponibilidad
     if (disponibilidad) {
@@ -279,18 +287,13 @@ app.get("/articulos", async (req, res) => {
   }
 });
 
-
 // 🧾 Endpoint: obtener rubros únicos (normalizados)
 app.get("/rubros", async (req, res) => {
   try {
     let rubros = await Articulo.distinct("rubro", { rubro: { $ne: "" } });
 
     rubros = rubros
-      .map((r) =>
-        r
-          ? r.trim().toLowerCase().replace(/\s+/g, " ")
-          : ""
-      )
+      .map((r) => (r ? r.trim().toLowerCase().replace(/\s+/g, " ") : ""))
       .filter((r) => r !== "")
       .map((r) => r.charAt(0).toUpperCase() + r.slice(1));
 
@@ -303,18 +306,13 @@ app.get("/rubros", async (req, res) => {
   }
 });
 
-
 // 🚗 Endpoint: obtener marcas de vehículo (listas) únicas (normalizadas)
 app.get("/listas", async (req, res) => {
   try {
     let listas = await Articulo.distinct("lista", { lista: { $ne: "" } });
 
     listas = listas
-      .map((l) =>
-        l
-          ? l.trim().toLowerCase().replace(/\s+/g, " ")
-          : ""
-      )
+      .map((l) => (l ? l.trim().toLowerCase().replace(/\s+/g, " ") : ""))
       .filter((l) => l !== "")
       .map((l) => l.charAt(0).toUpperCase() + l.slice(1));
 
@@ -326,7 +324,6 @@ app.get("/listas", async (req, res) => {
     res.status(500).json({ ok: false, error: err.message });
   }
 });
-
 
 // 🧾 Endpoint de estado
 app.get("/status", async (req, res) => {
@@ -395,9 +392,14 @@ cron.schedule("*/2 * * * *", async () => {
     const res = await axios.get(`${BASE_URL}/articulos?limit=1`, {
       timeout: 10000,
     });
-    console.log(`[${new Date().toLocaleTimeString()}] 🟢 Keep-alive OK (${res.status})`);
+    console.log(
+      `[${new Date().toLocaleTimeString()}] 🟢 Keep-alive OK (${res.status})`
+    );
   } catch (error) {
-    console.error(`[${new Date().toLocaleTimeString()}] 🔴 Keep-alive error:`, error.message);
+    console.error(
+      `[${new Date().toLocaleTimeString()}] 🔴 Keep-alive error:`,
+      error.message
+    );
   }
 });
 
@@ -408,7 +410,9 @@ cron.schedule("0 * * * *", async () => {
     await axios.get(`${BASE_URL}/articulos?limit=1`, { timeout: 10000 });
     console.log("✅ Servicio responde correctamente.");
   } catch (error) {
-    console.error("🚨 Servicio no responde. Intentando reiniciar vía API Render...");
+    console.error(
+      "🚨 Servicio no responde. Intentando reiniciar vía API Render..."
+    );
 
     if (!SERVICE_ID || !API_KEY) {
       console.error("⚠️ Falta RENDER_SERVICE_ID o RENDER_API_KEY en .env");
@@ -439,7 +443,10 @@ cron.schedule("*/3 * * * *", async () => {
     await axios.get(`${BASE_URL}/articulos?limit=1`);
     console.log(`[${new Date().toLocaleTimeString()}] 🟩 Ping externo enviado`);
   } catch (err) {
-    console.error(`[${new Date().toLocaleTimeString()}] 🔻 Error ping externo:`, err.message);
+    console.error(
+      `[${new Date().toLocaleTimeString()}] 🔻 Error ping externo:`,
+      err.message
+    );
   }
 });
 
