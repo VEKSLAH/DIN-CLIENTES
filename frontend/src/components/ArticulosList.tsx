@@ -375,7 +375,7 @@ export default function ArticulosList({ onAddToOrder }: ArticulosListProps) {
                   <tr>
                     <td
                       colSpan={9}
-                      className="text-center py-6 h-[60vh] text-gray-500"
+                      className="text-center py-6 h-[60vh] text-gray-500 z-50"
                     >
                       <div className="flex flex-col items-center justify-center gap-2 text-gray-500 text-sm">
                         {/* <svg
